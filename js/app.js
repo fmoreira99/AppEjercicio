@@ -606,7 +606,7 @@
       <div class="sheet-body">
         <p class="eyebrow">Ejercicio</p>
         <h2 class="h-display sheet-title">${e.n}</h2>
-        <div class="xstage"><div class="xfig fig" data-fig="${id}" data-animate role="img" aria-label="Demostración de ${e.n}"></div></div>
+        <div class="xstage"><div class="xfig fig" data-fig="${id}" data-animate data-trace role="img" aria-label="Demostración de ${e.n}"></div></div>
         <div class="frames">
           <figure class="frame"><div class="frame-fig fig" data-fig="${id}" data-frame="0" data-nophoto role="img" aria-label="Postura inicial"></div><figcaption><i>1</i>Inicio</figcaption></figure>
           <figure class="frame"><div class="frame-fig fig" data-fig="${id}" data-frame="end" data-nophoto role="img" aria-label="Postura final"></div><figcaption><i>2</i>Final</figcaption></figure>
@@ -768,7 +768,7 @@
     $('#pl-sec').textContent = `${w.section}${w.rounds > 1 ? ` · Ronda ${w.round}/${w.rounds}` : ''} · ${w.idx}/${w.count}`;
     $('#pl-name').textContent = ex.n + (w.max ? ' · MÁX' : '');
     $('#pl-cue').textContent = w.max ? 'Tantas repeticiones como puedas, sin parar, hasta que se acabe el tiempo.' : ex.c;
-    FIG.mount($('#pl-fig'), w.ex, { animate: true });
+    FIG.mount($('#pl-fig'), w.ex, { animate: true, trace: true });
     $('#pl-m').innerHTML = [...ex.m, ...(ex.floor ? ['En el suelo'] : []), ...(ex.gear ? [ex.gear] : [])].map((m) => `<span class="chip">${m}</span>`).join('');
     $('#pl-fill').style.width = `${(i / P.steps.length) * 100}%`;
     const ring = $('#ring-prog');

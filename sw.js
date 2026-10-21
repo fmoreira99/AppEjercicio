@@ -1,5 +1,5 @@
 // Cache simple para que Forja funcione sin conexión una vez abierta.
-const CACHE = 'forja-v3';
+const CACHE = 'forja-v4';
 const ASSETS = [
   './',
   'index.html',

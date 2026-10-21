@@ -143,7 +143,8 @@ code { font: 600 .85em ui-monospace, Menlo, Consolas, monospace; background: var
 .fig-svg .shoe { stroke: var(--fig-shoe); }
 .fig-svg .skin { stroke: var(--fig-skin); }
 .fig-svg .hand, .fig-svg .head { fill: var(--fig-skin); }
-.fig-svg .hair { fill: var(--fig-hair); }
+.fig-svg .hair, .fig-svg .eye { fill: var(--fig-hair); }
+.fig-svg .trace { fill: none; stroke: var(--fig-top); stroke-width: 1.3; stroke-dasharray: 1.6 2.6; stroke-linecap: round; opacity: .55; }
 .fig-svg.is-side .far { opacity: .55; }
 .fig-svg .kb-body { fill: var(--kb); }
 .fig-svg .kb-handle { fill: none; stroke: color-mix(in srgb, var(--kb) 62%, #000); stroke-linecap: round; }
