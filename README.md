@@ -7,6 +7,7 @@ App personal de ejercicio: plan semanal, rutinas con temporizador guiado (sonido
 - Abre `index.html` en el navegador, o sírvela con `npx serve`.
 - En el celular: súbela a GitHub Pages (Settings → Pages → rama `main`) y usa "Agregar a pantalla de inicio". Funciona sin conexión.
 - Los datos (plan e historial) se guardan solo en el dispositivo.
+- Formato vertical 9:16: en el celular ocupa toda la pantalla y en el computador o la tablet se ve dentro de un marco de teléfono.
 
 ### Tarjetas que se deslizan
 

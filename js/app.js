@@ -4,6 +4,8 @@
   const { CATS, GOALS, EX, EXGROUPS, ROUTINES, PROGRAM, PROGRAM_NAMES, DEFAULT_PLAN } = window.FORJA;
   const RT = Object.fromEntries(ROUTINES.map((r) => [r.id, r]));
   const $ = (s, el = document) => el.querySelector(s);
+  // En pantallas anchas la página se desplaza dentro del marco 9:16.
+  const toTop = () => { window.scrollTo(0, 0); const sc = $('#scroller'); if (sc) sc.scrollTop = 0; };
 
   // Cada ítem hereda tiempo y descanso de su sección.
   ROUTINES.forEach((r) =>
@@ -1157,12 +1159,12 @@
     document.body.classList.remove('no-scroll');
     ui.day = today();
     render();
-    window.scrollTo(0, 0);
+    toTop();
   }
 
   /* ---------- Acciones ---------- */
   const actions = {
-    tab(b) { ui.tab = b.dataset.tab; ui.confirmReset = false; render(); window.scrollTo(0, 0); },
+    tab(b) { ui.tab = b.dataset.tab; ui.confirmReset = false; render(); toTop(); },
     'pick-day'(b) { if (dayDeck) dayDeck.jump(dayIndex(b.dataset.day)); else { ui.day = b.dataset.day; render(); } },
     start(b) { startRoutine(b.dataset.id); },
     detail(b) { openDeck(b.dataset.id); },
@@ -1201,7 +1203,7 @@
     goal(b) { ui.goal = b.dataset.g; render(); },
     lib(b) { ui.lib = b.dataset.v; render(); },
     exg(b) { ui.exg = b.dataset.g; render(); },
-    'week-go'(b) { S.week = Math.max(1, Math.min(PROGRAM.length, S.week + Number(b.dataset.d))); save(); render(); window.scrollTo(0, 0); },
+    'week-go'(b) { S.week = Math.max(1, Math.min(PROGRAM.length, S.week + Number(b.dataset.d))); save(); render(); toTop(); },
     'set-over'(b) { S.over[ui.day] = b.dataset.id; save(); closeSheet(); render(); },
     'clear-over'() { delete S.over[ui.day]; save(); closeSheet(); render(); },
     'close-sheet'() { closeSheet(); },
