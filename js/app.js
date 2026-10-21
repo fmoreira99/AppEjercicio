@@ -26,6 +26,7 @@
   const weekOf = (s) => { const d = parse(s); const mon = addDays(d, -dow(d)); return Array.from({ length: 7 }, (_, i) => dstr(addDays(mon, i))); };
   const longDate = (d) => `${DAYS_L[dow(d)]} ${d.getDate()} de ${MONTHS[d.getMonth()]}`;
   const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+  const ejN = (n) => `${n} ${n === 1 ? 'ejercicio' : 'ejercicios'}`;
   const clock = (s) => (s >= 60 ? `${Math.floor(s / 60)}:${pad(s % 60)}` : String(s));
 
   /* ---------- Estado guardado ---------- */
@@ -302,7 +303,7 @@
           <p class="hero-tag">${r.tagline}</p>
           <ul class="hero-meta">
             <li>${ic('clock')} ${minutesOf(r)} min</li>
-            <li>${ic('list')} ${countOf(r)} ejercicios</li>
+            <li>${ic('list')} ${ejN(countOf(r))}</li>
           </ul>
           <button class="btn-cta" data-act="start" data-id="${r.id}">${ic('play')} ${doneSel ? 'Repetir' : 'Empezar'}</button>
         </div>
@@ -361,7 +362,7 @@
             <span class="pill">${ic(CATS[r.cat].icon)} ${minutesOf(r)} min</span>
             <b class="rcard-name">${r.name}</b>
             <span class="rcard-tag">${r.tagline}</span>
-            <span class="rcard-meta">${GOALS[r.goal] || ''} · ${countOf(r)} ejercicios</span>
+            <span class="rcard-meta">${GOALS[r.goal] || ''} · ${ejN(countOf(r))}</span>
           </span>
           <span class="rcard-art" aria-hidden="true">
             <span class="disc d1 fig" data-fig="${sc[0]}" data-live></span>
@@ -591,7 +592,7 @@
         <h2 class="h-display sheet-title ${r.name.length > 22 ? 'is-long' : ''}">${r.name}</h2>
         <p class="sheet-sub">${r.tagline}</p>
         <div class="chips">${r.focus.map((f) => `<span class="chip">${f}</span>`).join('')}</div>
-        <ul class="hero-meta flat"><li>${ic('clock')} ${minutesOf(r)} min</li><li>${ic('list')} ${countOf(r)} ejercicios</li></ul>
+        <ul class="hero-meta flat"><li>${ic('clock')} ${minutesOf(r)} min</li><li>${ic('list')} ${ejN(countOf(r))}</li></ul>
         ${notes.length ? `<p class="note">${notes.join(' ')}</p>` : ''}
         ${sectionsHTML(r)}
       </div>
