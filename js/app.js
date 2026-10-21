@@ -133,16 +133,26 @@
   function sectionsHTML(r) {
     return r.sections.map((s) => `
       <div class="blk">
-        <div class="blk-h"><h3>${s.title}</h3><span>${s.rounds > 1 ? s.rounds + ' rondas' : ''}</span></div>
-        <ol class="exlist">${s.items.map((it) => {
+        <div class="blk-h"><h3>${s.title}</h3>${s.rounds > 1 ? `<span>${s.rounds} rondas</span>` : ''}</div>
+        <ul class="exgrid">${s.items.map((it) => {
           const e = EX[it.ex];
-          return `<li><button class="exrow" data-act="ex" data-ex="${it.ex}" data-cat="${r.cat}">
-            <span class="exrow-fig fig" data-fig="${it.ex}"></span>
-            <span class="exrow-t"><b>${e.n}</b><small>${e.m.join(' · ')}</small></span>
-            <span class="exrow-s">${specOf(it)}</span>
+          return `<li><button class="excard" data-act="ex" data-ex="${it.ex}" data-cat="${r.cat}">
+            <span class="excard-media">
+              <span class="excard-stage fig" data-fig="${it.ex}" data-live></span>
+              <span class="excard-s">${specOf(it)}</span>
+            </span>
+            <span class="excard-t"><b>${e.n}</b><small>${e.m.slice(0, 2).join(' · ')}</small></span>
           </button></li>`;
-        }).join('')}</ol>
+        }).join('')}</ul>
       </div>`).join('');
+  }
+
+  /* Ejercicios distintos de una rutina, sin el calentamiento, para mostrarlos como vista previa. */
+  function showcase(r, max) {
+    const main = r.sections.filter((s, i) => !(i === 0 && /calent/i.test(s.title) && r.sections.length > 1));
+    const ids = [];
+    main.forEach((s) => s.items.forEach((it) => { if (!ids.includes(it.ex)) ids.push(it.ex); }));
+    return ids.slice(0, max);
   }
 
   function viewHoy() {
@@ -165,26 +175,35 @@
       </button>`;
     }).join('');
 
+    const stage = (list) => `<div class="hero-stage">
+        <div class="stage-fig fig" id="hero-fig" data-list="${list.join(',')}" role="img" aria-label="Vista previa de los ejercicios"></div>
+        <span class="stage-tag" id="hero-tag"></span>
+        <span class="stage-dots" id="hero-dots" aria-hidden="true">${list.map(() => '<i></i>').join('')}</span>
+      </div>`;
     let hero;
     if (r) {
       hero = `<section class="hero cat-${r.cat}">
-        ${ic(CATS[r.cat].icon, 'hero-art')}
-        <div class="hero-top"><span class="pill">${CATS[r.cat].label}</span>${doneSel ? `<span class="pill">${ic('check')} Hecha</span>` : ''}</div>
-        <h1 class="h-display hero-title">${r.name}</h1>
-        <p class="hero-tag">${r.tagline}</p>
-        <ul class="hero-meta">
-          <li>${ic('clock')} ${minutesOf(r)} min</li>
-          <li>${ic('list')} ${countOf(r)} ejercicios</li>
-        </ul>
-        <button class="btn-cta" data-act="start" data-id="${r.id}">${ic('play')} ${doneSel ? 'Repetir' : 'Empezar'}</button>
+        ${stage(showcase(r, 6))}
+        <div class="hero-body">
+          <div class="hero-top"><span class="pill">${CATS[r.cat].label}</span>${doneSel ? `<span class="pill">${ic('check')} Hecha</span>` : ''}</div>
+          <h1 class="h-display hero-title">${r.name}</h1>
+          <p class="hero-tag">${r.tagline}</p>
+          <ul class="hero-meta">
+            <li>${ic('clock')} ${minutesOf(r)} min</li>
+            <li>${ic('list')} ${countOf(r)} ejercicios</li>
+          </ul>
+          <button class="btn-cta" data-act="start" data-id="${r.id}">${ic('play')} ${doneSel ? 'Repetir' : 'Empezar'}</button>
+        </div>
       </section>`;
     } else {
-      hero = `<section class="hero cat-mob">
-        ${ic('rest', 'hero-art')}
-        <div class="hero-top"><span class="pill">Descanso</span></div>
-        <h1 class="h-display hero-title">Día libre</h1>
-        <p class="hero-tag">Recuperar también es entrenar. Si quieres moverte, haz movilidad suave.</p>
-        <button class="btn-cta" data-act="start" data-id="mov">${ic('stretch')} Movilidad · ${minutesOf(RT.mov)} min</button>
+      hero = `<section class="hero is-rest cat-mob">
+        ${stage(showcase(RT.mov, 6))}
+        <div class="hero-body">
+          <div class="hero-top"><span class="pill">Descanso</span></div>
+          <h1 class="h-display hero-title">Día libre</h1>
+          <p class="hero-tag">Recuperar también es entrenar. Si quieres moverte, haz movilidad suave.</p>
+          <button class="btn-cta" data-act="start" data-id="mov">${ic('stretch')} Movilidad · ${minutesOf(RT.mov)} min</button>
+        </div>
       </section>`;
     }
 
@@ -196,26 +215,35 @@
 
     return `
       <header class="top">
-        <span class="brand">${ic('kettlebell')} Forja</span>
+        <span class="brand"><span class="brand-mark">${ic('kettlebell')}</span>Forja</span>
         <span class="top-date">${cap(longDate(new Date()))}</span>
       </header>
       <nav class="week" aria-label="Semana">${strip}</nav>
       ${hero}
       <button class="btn-ghost block" data-act="change">Cambiar rutina de este día</button>
       ${ws2}
-      ${r ? `<section class="grp cat-${r.cat}"><h2 class="h-sec">Incluye</h2>${sectionsHTML(r)}</section>` : ''}`;
+      ${r ? `<section class="grp cat-${r.cat}"><h2 class="h-sec">Ejercicios de hoy</h2>${sectionsHTML(r)}</section>` : ''}`;
   }
 
   function viewRutinas() {
     const groups = Object.keys(CATS).map((c) => {
       const rs = ROUTINES.filter((r) => r.cat === c);
       if (!rs.length) return '';
-      return `<section class="grp"><h2 class="h-sec">${CATS[c].label}</h2>${rs.map((r) => `
-        <button class="rcard cat-${r.cat}" data-act="detail" data-id="${r.id}">
-          <span class="rcard-ic">${ic(CATS[r.cat].icon)}</span>
-          <span class="rcard-t"><b>${r.name}</b><small>${r.tagline}</small><em>${minutesOf(r)} min · ${countOf(r)} ejercicios</em></span>
-          ${ic('chevron', 'rcard-go')}
-        </button>`).join('')}</section>`;
+      return `<section class="grp"><h2 class="h-sec">${CATS[c].label}</h2>${rs.map((r) => {
+        const sc = showcase(r, 2);
+        return `<button class="rcard cat-${r.cat}" data-act="detail" data-id="${r.id}">
+          <span class="rcard-body">
+            <span class="pill">${ic(CATS[r.cat].icon)} ${minutesOf(r)} min</span>
+            <b class="rcard-name">${r.name}</b>
+            <span class="rcard-tag">${r.tagline}</span>
+            <span class="rcard-meta">${countOf(r)} ejercicios</span>
+          </span>
+          <span class="rcard-art" aria-hidden="true">
+            <span class="disc d1 fig" data-fig="${sc[0]}" data-live></span>
+            ${sc[1] ? `<span class="disc d2 fig" data-fig="${sc[1]}" data-live></span>` : ''}
+          </span>
+        </button>`;
+      }).join('')}</section>`;
     }).join('');
 
     const plan = DAYS_L.map((d, k) => `
@@ -227,7 +255,7 @@
       </label>`).join('');
 
     return `
-      <header class="top"><h1 class="h-display page-title">Rutinas</h1></header>
+      <header class="top"><div><h1 class="h-display page-title">Rutinas</h1><p class="page-sub">Toca una para ver cada ejercicio.</p></div></header>
       ${groups}
       <section class="grp">
         <h2 class="h-sec">Plan semanal</h2>
@@ -256,11 +284,22 @@
       ? recent.map((h) => {
           const r = RT[h.r];
           const d = parse(h.d);
-          return `<li class="hist-row ${r ? 'cat-' + r.cat : ''}"><i class="hist-dot"></i>
+          return `<li class="hist-row ${r ? 'cat-' + r.cat : ''}"><span class="hist-ic">${ic(r ? CATS[r.cat].icon : 'check')}</span>
             <span class="hist-t"><b>${r ? r.name : 'Rutina'}</b><small>${r ? CATS[r.cat].label : ''}</small></span>
             <span class="hist-m">${DAYS_3[dow(d)]} ${d.getDate()} ${MONTHS[d.getMonth()].slice(0, 3)}<small>${h.m} min${h.e ? ' · ' + effort[h.e] : ''}</small></span></li>`;
         }).join('')
       : `<li class="empty">Aún no hay sesiones. Cuando termines una rutina aparecerá aquí.</li>`;
+
+    const wk = weekOf(t).map((ds, i) => {
+      const hs = S.hist.filter((h) => h.d === ds);
+      const last = hs.length ? RT[hs[hs.length - 1].r] : null;
+      return { ds, i, m: hs.reduce((a, h) => a + h.m, 0), cat: last ? last.cat : null };
+    });
+    const maxM = Math.max(30, ...wk.map((x) => x.m));
+    const wkMin = wk.reduce((a, x) => a + x.m, 0);
+    const bars = wk.map((x) => `<div class="wk-col ${x.ds === t ? 'is-today' : ''}">
+        <i class="wk-bar ${x.cat ? 'cat-' + x.cat : 'is-empty'}" style="height:${x.m ? Math.max(8, Math.round((x.m / maxM) * 100)) : 0}%" title="${x.m} min"></i>
+        <span class="wk-l">${DAYS_S[x.i]}</span></div>`).join('');
 
     return `
       <header class="top"><h1 class="h-display page-title">Progreso</h1></header>
@@ -268,6 +307,10 @@
         <div class="stat"><span class="stat-n">${streak()}</span><span class="stat-l">${ic('flame')} Racha</span></div>
         <div class="stat"><span class="stat-n">${S.hist.length}</span><span class="stat-l">Sesiones</span></div>
         <div class="stat"><span class="stat-n">${total}</span><span class="stat-l">Minutos</span></div>
+      </section>
+      <section class="wk" aria-label="Minutos de esta semana">
+        <div class="wk-head"><b>Esta semana</b><small>${wkMin} min</small></div>
+        <div class="wk-bars">${bars}</div>
       </section>
       <section class="grp">
         <div class="cal-head">
@@ -296,6 +339,33 @@
       if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
     FIG.hydrate(view);
+    startRotor();
+  }
+
+  /* Vista previa de la portada: va pasando por los ejercicios de la rutina. */
+  let rotor = null;
+  function stopRotor() { clearInterval(rotor); rotor = null; }
+  function startRotor() {
+    stopRotor();
+    const host = $('#hero-fig');
+    if (!host || P) return;
+    const list = host.dataset.list.split(',').filter(Boolean);
+    if (!list.length) return;
+    const tag = $('#hero-tag');
+    const dots = document.querySelectorAll('#hero-dots i');
+    let k = 0;
+    const show = () => {
+      const id = list[k % list.length];
+      FIG.mount(host, id, { animate: true });
+      host.style.animation = 'none';
+      void host.offsetWidth;
+      host.style.animation = '';
+      tag.textContent = EX[id].n;
+      dots.forEach((d, j) => d.classList.toggle('on', j === k % list.length));
+      k++;
+    };
+    show();
+    if (list.length > 1) rotor = setInterval(show, 3600);
   }
 
   /* ---------- Hojas (sheets) y aviso ---------- */
@@ -351,8 +421,13 @@
       <div class="sheet-body">
         <p class="eyebrow">Ejercicio</p>
         <h2 class="h-display sheet-title">${e.n}</h2>
-        <div class="sheet-fig fig" data-fig="${id}" data-animate role="img" aria-label="Demostración de ${e.n}"></div>
+        <div class="xstage"><div class="xfig fig" data-fig="${id}" data-animate role="img" aria-label="Demostración de ${e.n}"></div></div>
+        <div class="frames">
+          <figure class="frame"><div class="frame-fig fig" data-fig="${id}" data-frame="0" data-nophoto role="img" aria-label="Postura inicial"></div><figcaption><i>1</i>Inicio</figcaption></figure>
+          <figure class="frame"><div class="frame-fig fig" data-fig="${id}" data-frame="end" data-nophoto role="img" aria-label="Postura final"></div><figcaption><i>2</i>Final</figcaption></figure>
+        </div>
         <div class="chips">${e.m.map((x) => `<span class="chip">${x}</span>`).join('')}</div>
+        <h3 class="h-sec">Cómo se hace</h3>
         <p class="sheet-cue">${e.c}</p>
       </div>`, cat);
   }
@@ -413,7 +488,7 @@
 
   /* ---------- Reproductor ---------- */
   let P = null;
-  const C = 2 * Math.PI * 88;
+  const C = 2 * Math.PI * 96;
 
   function playerShell(r) {
     return `<div class="pl cat-${r.cat}" id="pl">
@@ -429,15 +504,13 @@
         <div class="pl-bar" role="progressbar" aria-label="Progreso de la rutina"><i id="pl-fill"></i></div>
         <div class="pl-stage">
           <p class="pl-phase" id="pl-phase"></p>
-          <div class="pl-row">
-            <div class="ring">
-              <svg viewBox="0 0 200 200" aria-hidden="true">
-                <circle class="ring-track" cx="100" cy="100" r="88"/>
-                <circle class="ring-prog" id="ring-prog" cx="100" cy="100" r="88" transform="rotate(-90 100 100)"/>
-              </svg>
-              <div class="ring-c"><span class="ring-n" id="pl-time"></span><span class="ring-u" id="pl-unit"></span></div>
-            </div>
-            <div class="pl-fig fig" id="pl-fig" role="img" aria-label="Demostración del ejercicio"></div>
+          <div class="dial">
+            <svg class="dial-ring" viewBox="0 0 200 200" aria-hidden="true">
+              <circle class="ring-track" cx="100" cy="100" r="96"/>
+              <circle class="ring-prog" id="ring-prog" cx="100" cy="100" r="96" transform="rotate(-90 100 100)"/>
+            </svg>
+            <div class="dial-fig fig" id="pl-fig" role="img" aria-label="Demostración del ejercicio"></div>
+            <div class="dial-time"><span class="ring-n" id="pl-time"></span><span class="ring-u" id="pl-unit"></span></div>
           </div>
           <div class="pl-info">
             <p class="pl-pre">Sigue</p>
@@ -468,6 +541,7 @@
     const r = RT[id];
     if (!r) return;
     closeSheet();
+    stopRotor();
     ac();
     P = { r, steps: stepsOf(r), i: 0, paused: false, t0: Date.now(), pausedMs: 0, pauseAt: 0, remMs: 0, endAt: 0, dur: 0, lastSec: null, swapped: false, stepAt: 0, timer: null, confirm: false, wasPaused: false, done: false };
     const root = $('#player');

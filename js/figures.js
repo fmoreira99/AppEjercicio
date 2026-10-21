@@ -1,6 +1,6 @@
 /*
   Figuras animadas de referencia para cada ejercicio.
-  Cada figura es un muñeco de líneas con 2 o más posturas que se interpolan.
+  Cada figura es un muñeco con 2 o más posturas que se interpolan.
 
   Ángulos: 0 = hacia abajo, 90 = hacia adelante (derecha en pantalla), 180 = hacia arriba.
   Torso `t`: 0 = vertical, positivo = inclinado hacia adelante.
@@ -181,7 +181,7 @@
       return front ? [a[0] + 4 * side, a[1]] : [a[0] + 6, Math.min(G, a[1] + 4)];
     };
     return {
-      hip: [q.hx, q.hy], hip1, hip2, neck, head, sh1, sh2,
+      hip: [q.hx, q.hy], hip1, hip2, neck, head, headRot: q.t + q.h, sh1, sh2,
       arm1: arm(sh1, q.a), arm2: arm(sh2, q.a2),
       leg1: [hip1, l1.knee, l1.ank, toe(l1, 1)],
       leg2: [hip2, l2.knee, l2.ank, toe(l2, -1)]
@@ -196,87 +196,106 @@
     return n;
   };
   const pts = (arr) => arr.map((p) => `${r1(p[0])},${r1(p[1])}`).join(' ');
+  const seg = (n, a, b) => {
+    n.setAttribute('x1', r1(a[0])); n.setAttribute('y1', r1(a[1]));
+    n.setAttribute('x2', r1(b[0])); n.setAttribute('y2', r1(b[1]));
+  };
 
   function dumbbell(parent, horizontal) {
     const g = el('g', {}, parent);
     if (horizontal) {
-      el('line', { x1: -4.5, y1: 0, x2: 4.5, y2: 0, class: 'p-stroke', 'stroke-width': 1.8 }, g);
-      el('rect', { x: -7.2, y: -3, width: 3.2, height: 6, rx: 1, class: 'p-fill' }, g);
-      el('rect', { x: 4, y: -3, width: 3.2, height: 6, rx: 1, class: 'p-fill' }, g);
+      el('line', { x1: -4.5, y1: 0, x2: 4.5, y2: 0, class: 'db-bar', 'stroke-width': 1.8 }, g);
+      el('rect', { x: -7.4, y: -3.2, width: 3.4, height: 6.4, rx: 1.2, class: 'db-plate' }, g);
+      el('rect', { x: 4, y: -3.2, width: 3.4, height: 6.4, rx: 1.2, class: 'db-plate' }, g);
     } else {
-      el('circle', { cx: 0, cy: 0, r: 3.9, class: 'p-stroke', 'stroke-width': 2.4 }, g);
-      el('circle', { cx: 0, cy: 0, r: 1.1, class: 'p-fill' }, g);
+      el('circle', { cx: 0, cy: 0, r: 4.2, class: 'db-plate' }, g);
+      el('circle', { cx: 0, cy: 0, r: 1.5, class: 'db-hub' }, g);
     }
     return g;
   }
   function dumbbellAxis(parent) {
     const g = el('g', {}, parent);
-    el('line', { x1: 0, y1: 0, x2: 0, y2: 12, class: 'p-stroke', 'stroke-width': 1.8 }, g);
-    el('rect', { x: -3.6, y: -0.5, width: 7.2, height: 3.4, rx: 1, class: 'p-fill' }, g);
-    el('rect', { x: -3.6, y: 9.1, width: 7.2, height: 3.4, rx: 1, class: 'p-fill' }, g);
+    el('line', { x1: 0, y1: 0, x2: 0, y2: 12, class: 'db-bar', 'stroke-width': 1.8 }, g);
+    el('rect', { x: -3.8, y: -0.8, width: 7.6, height: 3.8, rx: 1.2, class: 'db-plate' }, g);
+    el('rect', { x: -3.8, y: 9, width: 7.6, height: 3.8, rx: 1.2, class: 'db-plate' }, g);
     return g;
   }
   function kettlebell(parent) {
     const g = el('g', {}, parent);
-    el('path', { d: 'M-3.3,3.4V0.6a3.3,3.3 0 0 1 6.6,0V3.4', class: 'p-stroke', 'stroke-width': 1.9 }, g);
-    el('circle', { cx: 0, cy: 8, r: 5.2, class: 'p-fill' }, g);
+    el('path', { d: 'M-3.4,3.4V0.6a3.4,3.4 0 0 1 6.8,0V3.4', class: 'kb-handle', 'stroke-width': 2 }, g);
+    el('circle', { cx: 0, cy: 8, r: 5.4, class: 'kb-body' }, g);
+    el('circle', { cx: -1.9, cy: 6.4, r: 1.3, class: 'kb-shine' }, g);
     return g;
+  }
+
+  function limbs(parent) {
+    return {
+      leg: el('polyline', { class: 'pants', 'stroke-width': 6.2 }, parent),
+      foot: el('line', { class: 'shoe', 'stroke-width': 3.8 }, parent),
+      up: el('line', { class: 'shirt', 'stroke-width': 5.4 }, parent),
+      fore: el('line', { class: 'skin', 'stroke-width': 4.3 }, parent),
+      hand: el('circle', { class: 'hand', r: 2.5 }, parent)
+    };
   }
 
   function build(fig, view) {
     const front = view === 'front';
     const svg = el('svg', { viewBox: '0 0 100 100', class: 'fig-svg ' + (front ? 'is-front' : 'is-side'), 'aria-hidden': 'true', focusable: 'false' });
-    el('line', { class: 'floor', x1: 14, y1: 90.5, x2: 86, y2: 90.5 }, svg);
-    const far = el('g', { class: 'far' }, svg);
-    const farLeg = el('polyline', { class: 'limb', 'stroke-width': 5.4 }, far);
-    const farFoot = el('polyline', { class: 'limb', 'stroke-width': 3.4 }, far);
-    const farArm = el('polyline', { class: 'limb', 'stroke-width': 4.6 }, far);
-    let farProp = null;
+    el('ellipse', { class: 'shadow', cx: 50, cy: 91.5, rx: 25, ry: 2.8 }, svg);
     const prop = fig.prop;
+    const far = el('g', { class: 'far' }, svg);
+    const L2 = limbs(far);
+    let farProp = null;
     if (prop && prop.k === 'db2' && prop.g === 'both') farProp = dumbbell(far, front || fig.dbx);
     const body = el('g', { class: 'body' }, svg);
-    const torso = el('line', { class: 'limb', 'stroke-width': 6.4 }, body);
-    const hipBar = front ? el('line', { class: 'limb', 'stroke-width': 4.6 }, body) : null;
-    const shBar = front ? el('line', { class: 'limb', 'stroke-width': 4.6 }, body) : null;
-    const nearLeg = el('polyline', { class: 'limb', 'stroke-width': 5.4 }, body);
-    const nearFoot = el('polyline', { class: 'limb', 'stroke-width': 3.4 }, body);
-    const nearArm = el('polyline', { class: 'limb', 'stroke-width': 4.6 }, body);
-    const head = el('circle', { class: 'head', r: 5.6 }, body);
+    const L1 = limbs(body);
+    // El torso va sobre las piernas pero bajo el brazo cercano.
+    body.insertBefore(el('line', { class: 'shirt', 'stroke-width': front ? 10 : 8.6 }), L1.up);
+    const torso = body.querySelector('line.shirt');
+    let hipBar = null;
+    let shBar = null;
+    if (front) {
+      hipBar = el('line', { class: 'pants', 'stroke-width': 6.6 });
+      body.insertBefore(hipBar, torso);
+      shBar = el('line', { class: 'shirt', 'stroke-width': 5.8 });
+      body.insertBefore(shBar, L1.up);
+    }
+    const head = el('circle', { class: 'head', r: 5.9 }, body);
+    const hair = el('path', { class: 'hair', d: 'M-6,0.6 A6,6 0 0 1 6,0.6 Q2.4,-2.4 -6,0.6Z' }, body);
     let main = null;
     if (prop) {
       if (prop.k === 'kb') main = kettlebell(body);
       else if (prop.k === 'db1') main = dumbbellAxis(body);
       else if (prop.k === 'db2') main = dumbbell(body, front || fig.dbx);
     }
-    return { svg, farLeg, farFoot, farArm, farProp, torso, hipBar, shBar, nearLeg, nearFoot, nearArm, head, main, prop, front, fig };
+    return { svg, L1, L2, torso, hipBar, shBar, head, hair, farProp, main, prop, front, fig };
+  }
+
+  function drawLimbs(L, leg, arm) {
+    L.leg.setAttribute('points', pts(leg.slice(0, 3)));
+    seg(L.foot, leg[2], leg[3]);
+    seg(L.up, arm[0], arm[1]);
+    seg(L.fore, arm[1], arm[2]);
+    L.hand.setAttribute('cx', r1(arm[2][0]));
+    L.hand.setAttribute('cy', r1(arm[2][1]));
   }
 
   function draw(c, q) {
     const s = solve(q, c.fig.view);
-    c.torso.setAttribute('x1', r1(s.hip[0])); c.torso.setAttribute('y1', r1(s.hip[1]));
-    c.torso.setAttribute('x2', r1(s.neck[0])); c.torso.setAttribute('y2', r1(s.neck[1]));
-    if (c.front) {
-      c.hipBar.setAttribute('x1', r1(s.hip2[0])); c.hipBar.setAttribute('y1', r1(s.hip2[1]));
-      c.hipBar.setAttribute('x2', r1(s.hip1[0])); c.hipBar.setAttribute('y2', r1(s.hip1[1]));
-      c.shBar.setAttribute('x1', r1(s.sh2[0])); c.shBar.setAttribute('y1', r1(s.sh2[1]));
-      c.shBar.setAttribute('x2', r1(s.sh1[0])); c.shBar.setAttribute('y2', r1(s.sh1[1]));
-    }
-    c.nearLeg.setAttribute('points', pts(s.leg1.slice(0, 3)));
-    c.nearFoot.setAttribute('points', pts(s.leg1.slice(2)));
-    c.farLeg.setAttribute('points', pts(s.leg2.slice(0, 3)));
-    c.farFoot.setAttribute('points', pts(s.leg2.slice(2)));
-    c.nearArm.setAttribute('points', pts(s.arm1));
-    c.farArm.setAttribute('points', pts(s.arm2));
+    seg(c.torso, s.hip, s.neck);
+    if (c.front) { seg(c.hipBar, s.hip2, s.hip1); seg(c.shBar, s.sh2, s.sh1); }
+    drawLimbs(c.L1, s.leg1, s.arm1);
+    drawLimbs(c.L2, s.leg2, s.arm2);
     c.head.setAttribute('cx', r1(s.head[0])); c.head.setAttribute('cy', r1(s.head[1]));
+    c.hair.setAttribute('transform', `translate(${r1(s.head[0])} ${r1(s.head[1])}) rotate(${r1(s.headRot)})`);
     const p = c.prop;
     if (p && c.main) {
       const h1 = s.arm1[2];
       const h2 = s.arm2[2];
       const at = (pt) => `translate(${r1(pt[0])} ${r1(pt[1])})`;
       if (p.k === 'db2') {
-        const rot = c.front || c.fig.dbx ? '' : '';
-        c.main.setAttribute('transform', at(h1) + rot);
-        if (c.farProp) c.farProp.setAttribute('transform', at(h2) + rot);
+        c.main.setAttribute('transform', at(h1));
+        if (c.farProp) c.farProp.setAttribute('transform', at(h2));
       } else {
         const pos = p.g === 'near' ? h1 : [(h1[0] + h2[0]) / 2, (h1[1] + h2[1]) / 2];
         const along = p.k === 'db1' ? 3 : 0;
@@ -306,6 +325,22 @@
     });
     if (live.size) raf = requestAnimationFrame(tickAll);
   }
+  function play(c) {
+    if (!c.t0) c.t0 = performance.now();
+    live.add(c);
+    if (!raf) raf = requestAnimationFrame(tickAll);
+  }
+
+  // Las figuras de las tarjetas solo se animan mientras se ven en pantalla.
+  const io = 'IntersectionObserver' in window
+    ? new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          const c = en.target._fig;
+          if (!c || !c.lazy) return;
+          if (en.isIntersecting) play(c); else live.delete(c);
+        });
+      }, { rootMargin: '80px' })
+    : null;
 
   /* Si existe img/ejercicios/<id>.<ext> se muestra en lugar del muñeco. */
   const photos = {};
@@ -323,10 +358,13 @@
     return photos[id];
   }
 
+  /* Postura "final" de cada ejercicio: la más representativa para una miniatura. */
+  const endFrame = (fig) => (fig.loop === 'cycle' ? 1 : fig.poses.length - 1);
+
   function mount(host, id, opts) {
     opts = opts || {};
     if (!host) return;
-    if (host._fig) live.delete(host._fig);
+    if (host._fig) { live.delete(host._fig); if (io) io.unobserve(host); }
     host.classList.remove('has-photo');
     host.textContent = '';
     const fig = FIGS[id];
@@ -340,35 +378,47 @@
     c.T = fig.T || 0.9;
     host.appendChild(c.svg);
     host._fig = c;
-    const frame = Math.min(opts.frame == null ? 1 : opts.frame, n - 1);
+    let frame = opts.frame == null || opts.frame === 'end' ? endFrame(fig) : opts.frame;
+    frame = Math.max(0, Math.min(frame, n - 1));
     draw(c, c.poses[frame]);
     if (opts.animate && !reduced()) {
-      c.t0 = performance.now();
-      live.add(c);
-      if (!raf) raf = requestAnimationFrame(tickAll);
+      if (opts.lazy && io) { c.lazy = true; io.observe(host); } else play(c);
     }
-    findPhoto(id).then((url) => {
-      if (!url || host._fig !== c) return;
-      live.delete(c);
-      host.textContent = '';
-      const img = document.createElement('img');
-      img.className = 'fig-img';
-      img.src = url;
-      img.alt = '';
-      img.decoding = 'async';
-      host.appendChild(img);
-      host.classList.add('has-photo');
-    });
+    if (opts.photo !== false) {
+      findPhoto(id).then((url) => {
+        if (!url || host._fig !== c) return;
+        live.delete(c);
+        host.textContent = '';
+        const img = document.createElement('img');
+        img.className = 'fig-img';
+        img.src = url;
+        img.alt = '';
+        img.decoding = 'async';
+        host.appendChild(img);
+        host.classList.add('has-photo');
+      });
+    }
   }
 
   function unmount(host) {
-    if (host && host._fig) { live.delete(host._fig); host._fig = null; host.textContent = ''; }
+    if (host && host._fig) { live.delete(host._fig); if (io) io.unobserve(host); host._fig = null; host.textContent = ''; }
   }
 
-  /* Rellena todos los [data-fig] dentro de un contenedor (miniaturas estáticas). */
-  function hydrate(root, animate) {
+  /*
+    Rellena los [data-fig] de un contenedor.
+    data-animate: animada siempre · data-live: animada solo mientras se ve
+    data-frame: 0, 1… o "end" (por defecto) · data-nophoto: ignora la imagen propia
+  */
+  function hydrate(root) {
     (root || document).querySelectorAll('[data-fig]').forEach((h) => {
-      if (!h._fig) mount(h, h.dataset.fig, { animate: animate || h.hasAttribute('data-animate'), frame: 1 });
+      if (h._fig) return;
+      const f = h.dataset.frame;
+      mount(h, h.dataset.fig, {
+        animate: h.hasAttribute('data-animate') || h.hasAttribute('data-live'),
+        lazy: h.hasAttribute('data-live'),
+        frame: f == null ? 'end' : (f === 'end' ? 'end' : Number(f)),
+        photo: !h.hasAttribute('data-nophoto')
+      });
     });
   }
 
