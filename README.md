@@ -8,6 +8,11 @@ App personal de ejercicio: plan semanal, rutinas con temporizador guiado (sonido
 - En el celular: súbela a GitHub Pages (Settings → Pages → rama `main`) y usa "Agregar a pantalla de inicio". Funciona sin conexión.
 - Los datos (plan e historial) se guardan solo en el dispositivo.
 
+### Tarjetas que se deslizan
+
+- **Hoy** muestra una tarjeta por día. Desliza a la izquierda para ir al día siguiente y a la derecha para el anterior (o usa las flechas). Cada tarjeta dice si la rutina está **Hecha**, **No cumplida** o es **Descanso**. Con "La hice" puedes marcar una rutina que hiciste sin la app.
+- Al abrir un día (o una rutina desde Rutinas o Programa), los ejercicios aparecen como un mazo de tarjetas: deslizas para verlos uno a uno y tocas una tarjeta para ver la postura inicial y final. **Iniciar** abre el temporizador guiado.
+
 ## Programa del PDF
 
 La pestaña **Programa** tiene las 15 semanas del PDF (Aphrodite, Artemis, Hades, Iris, Venus, Poseidon, Dione, Zeus, Metis y los entrenamientos "MAX"), con sus pausas. Cada sesión terminada se marca sola. En el plan semanal, los días con "Programa del PDF" toman la siguiente sesión pendiente de la semana que estés haciendo.

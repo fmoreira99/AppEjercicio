@@ -117,11 +117,6 @@
     return RT[id] || null;
   }
   const sessKey = (w, i) => `${w}:${i}`;
-  function nextSession(w) {
-    const list = SESS[w - 1];
-    for (let i = 0; i < list.length; i++) if (!list[i].rest && !S.done[sessKey(w, i)]) return i;
-    return -1;
-  }
   const weekCount = (w) => SESS[w - 1].filter((d) => !d.rest).length;
   const weekDone = (w) => SESS[w - 1].filter((d, i) => !d.rest && S.done[sessKey(w, i)]).length;
 
@@ -129,10 +124,9 @@
   // Resuelve un id del plan ('prog', 'rest' o una rutina) a la rutina que toca.
   function resolve(id) {
     if (id === 'rest') return null;
-    if (id === 'prog') { const i = nextSession(S.week); return i < 0 ? null : buildSession(S.week, i, 0); }
+    if (id === 'prog') return progAt(0);
     return byId(id);
   }
-  const progFinished = (id) => id === 'prog' && nextSession(S.week) < 0;
   const histName = (h) => h.n || (byId(h.r) && byId(h.r).name) || 'Rutina';
   const histCat = (h) => h.c || (byId(h.r) && byId(h.r).cat) || null;
 
@@ -241,23 +235,6 @@
   /* ---------- Vistas ---------- */
   const view = $('#view');
 
-  function sectionsHTML(r) {
-    return r.sections.map((s) => `
-      <div class="blk">
-        <div class="blk-h"><h3>${s.title}</h3>${s.rounds > 1 ? `<span>${s.rounds} rondas</span>` : ''}</div>
-        <ul class="exgrid">${s.items.map((it) => {
-          const e = EX[it.ex];
-          return `<li><button class="excard" data-act="ex" data-ex="${it.ex}" data-cat="${r.cat}">
-            <span class="excard-media">
-              <span class="excard-stage fig" data-fig="${it.ex}" data-live></span>
-              <span class="excard-s">${specOf(it)}</span>
-            </span>
-            <span class="excard-t"><b>${e.n}${it.max ? ' · MÁX' : ''}</b><small>${e.m.slice(0, 2).join(' · ')}</small></span>
-          </button></li>`;
-        }).join('')}</ul>
-      </div>`).join('');
-  }
-
   /* Ejercicios distintos de una rutina, sin el calentamiento, para mostrarlos como vista previa. */
   function showcase(r, max) {
     const main = r.sections.filter((s, i) => !(i === 0 && /calent/i.test(s.title) && r.sections.length > 1));
@@ -286,88 +263,367 @@
   const PLUS = ['kb-express', 'kb-full'];
   const isShort = (r) => !!r && r.src === 'pdf' && minutesOf(r) < 25;
 
-  function viewHoy() {
-    const t = today();
-    const week = weekOf(t);
-    const sel = ui.day;
-    const rid = routineFor(sel);
-    const r = resolve(rid);
-    const doneSel = S.hist.some((h) => h.d === sel);
-    const ws = weekStats();
+  /* ---------- Hoy: una tarjeta por día que se desliza ---------- */
+  const DAY_RANGE = 60;
+  const dayAt = (i) => dstr(addDays(parse(today()), i));
+  const dayIndex = (ds) => Math.round((parse(ds) - parse(today())) / 864e5);
+  const histOn = (ds) => S.hist.filter((h) => h.d === ds);
 
-    const strip = week.map((ds, i) => {
-      const id = routineFor(ds);
-      const rr = id === 'prog' ? { cat: 'mix', name: 'programa' } : resolve(id);
-      const isDone = S.hist.some((h) => h.d === ds);
-      const n = parse(ds).getDate();
-      return `<button class="day ${ds === sel ? 'is-sel' : ''} ${ds === t ? 'is-today' : ''}" data-act="pick-day" data-day="${ds}"
-        aria-pressed="${ds === sel}" aria-label="${DAYS_L[i]} ${n}: ${rr ? rr.name : 'descanso'}${isDone ? ', hecha' : ''}">
-        <span class="day-l">${DAYS_S[i]}</span><span class="day-n">${n}</span>
-        <span class="day-dot ${rr ? 'cat-' + rr.cat : 'is-rest'} ${isDone ? 'is-done' : ''}">${isDone ? ic('check') : ''}</span>
-      </button>`;
-    }).join('');
-
-    const stage = (list) => `<div class="hero-stage">
-        <div class="stage-fig fig" id="hero-fig" data-list="${list.join(',')}" role="img" aria-label="Vista previa de los ejercicios"></div>
-        <span class="stage-tag" id="hero-tag"></span>
-        <span class="stage-dots" id="hero-dots" aria-hidden="true">${list.map(() => '<i></i>').join('')}</span>
-      </div>`;
-    let hero;
-    if (r) {
-      const isProg = rid === 'prog';
-      hero = `<section class="hero cat-${r.cat}">
-        ${stage(showcase(r, 6))}
-        <div class="hero-body">
-          <div class="hero-top"><span class="pill">${isProg ? `Programa · semana ${S.week}` : CATS[r.cat].label}</span>${r.goal ? `<span class="pill">${GOALS[r.goal]}</span>` : ''}${doneSel ? `<span class="pill">${ic('check')} Hecha</span>` : ''}</div>
-          <h1 class="h-display hero-title ${r.name.length > 22 ? 'is-long' : ''}">${r.name}</h1>
-          <p class="hero-tag">${r.tagline}</p>
-          <ul class="hero-meta">
-            <li>${ic('clock')} ${minutesOf(r)} min</li>
-            <li>${ic('list')} ${ejN(countOf(r))}</li>
-          </ul>
-          <button class="btn-cta" data-act="start" data-id="${r.id}">${ic('play')} ${doneSel ? 'Repetir' : 'Empezar'}</button>
-        </div>
-      </section>`;
-    } else if (progFinished(rid)) {
-      const last = S.week >= PROGRAM.length;
-      hero = `<section class="hero cat-mix">
-        ${stage(showcase(RT.aphrodite, 3))}
-        <div class="hero-body">
-          <div class="hero-top"><span class="pill">Programa · semana ${S.week}</span></div>
-          <h1 class="h-display hero-title">Semana completa</h1>
-          <p class="hero-tag">${last ? 'Terminaste las 15 semanas del programa.' : `Hiciste las ${weekCount(S.week)} sesiones de la semana ${S.week}. Pasa a la siguiente cuando quieras.`}</p>
-          ${last ? '' : `<button class="btn-cta" data-act="week-go" data-d="1">${ic('play')} Ir a la semana ${S.week + 1}</button>`}
-        </div>
-      </section>`;
-    } else {
-      hero = `<section class="hero is-rest cat-mob">
-        ${stage(showcase(RT.mov, 6))}
-        <div class="hero-body">
-          <div class="hero-top"><span class="pill">Descanso</span></div>
-          <h1 class="h-display hero-title">Día libre</h1>
-          <p class="hero-tag">Recuperar también es entrenar. Si quieres moverte, haz movilidad suave.</p>
-          <button class="btn-cta" data-act="start" data-id="mov">${ic('stretch')} Movilidad · ${minutesOf(RT.mov)} min</button>
-        </div>
-      </section>`;
+  // Sesión del programa que toca un día: las pendientes se reparten entre los próximos días de programa.
+  function progAt(n) {
+    for (let w = S.week; w <= PROGRAM.length; w++) {
+      const list = SESS[w - 1];
+      for (let i = 0; i < list.length; i++) {
+        if (list[i].rest || S.done[sessKey(w, i)]) continue;
+        if (n-- === 0) return buildSession(w, i, 0);
+      }
     }
+    return null;
+  }
+  function planFor(ds) {
+    const id = routineFor(ds);
+    if (id === 'rest') return null;
+    if (id !== 'prog') return byId(id);
+    const t = today();
+    let n = 0;
+    for (let d = parse(t); dstr(d) < ds; d = addDays(d, 1)) {
+      const k = dstr(d);
+      if (routineFor(k) === 'prog' && !histOn(k).length) n++;
+    }
+    return progAt(n);
+  }
+  function dayInfo(ds) {
+    const hs = histOn(ds);
+    const h = hs[hs.length - 1] || null;
+    const r = h ? byId(h.r) : planFor(ds);
+    return { h, r, done: !!h, ended: !h && !r && routineFor(ds) === 'prog' };
+  }
 
-    const ws2 = `<section class="stats" aria-label="Resumen">
-      <div class="stat"><span class="stat-n">${streak()}</span><span class="stat-l">${ic('flame')} Racha</span></div>
-      <div class="stat"><span class="stat-n">${ws.n}</span><span class="stat-l">Esta semana</span></div>
-      <div class="stat"><span class="stat-n">${ws.min}</span><span class="stat-l">Minutos</span></div>
-    </section>`;
+  function dayCard(i, top) {
+    const ds = dayAt(i);
+    const t = today();
+    const d = parse(ds);
+    const { h, r, done, ended } = dayInfo(ds);
+    const rest = !done && !r;
+    const cat = done ? h.c || (r && r.cat) || 'mix' : r ? r.cat : 'mob';
+    const list = showcase(r || RT.mov, 6);
+    const rel = i === 0 ? 'Hoy' : i === 1 ? 'Mañana' : i === -1 ? 'Ayer' : i > 0 ? `En ${i} días` : `Hace ${-i} días`;
+    const fig = top
+      ? `<div class="stage-fig fig" id="hero-fig" data-list="${list.join(',')}" role="img" aria-label="Vista previa de los ejercicios"></div><span class="stage-tag" id="hero-tag"></span>`
+      : `<div class="stage-fig fig" data-fig="${list[0]}"></div>`;
+    let stamp = '';
+    if (done) stamp = '<span class="stamp is-ok">Hecha</span>';
+    else if (rest) stamp = `<span class="stamp is-rest">${ended ? 'Fin' : 'Descanso'}</span>`;
+    else if (ds < t) stamp = '<span class="stamp is-no">No cumplida</span>';
+    const name = done ? h.n || (r && r.name) || 'Rutina' : r ? r.name : ended ? 'Programa completo' : 'Día libre';
+    const tag = done
+      ? `${h.m} min${h.manual ? ' · marcada a mano' : ''}${r ? ` · ${ejN(countOf(r))}` : ''}`
+      : r ? r.tagline : ended ? 'Terminaste las 15 semanas del programa.' : 'Recuperar también es entrenar. Si quieres moverte, haz movilidad suave.';
+    const pills = r
+      ? `<span class="pill">${r.sess ? `Programa · semana ${r.sess.w}` : CATS[r.cat].label}</span>${r.goal ? `<span class="pill">${GOALS[r.goal]}</span>` : ''}`
+      : '<span class="pill">Descanso</span>';
+    const meta = r ? `<li>${ic('clock')} ${minutesOf(r)} min</li><li>${ic('list')} ${ejN(countOf(r))}</li>` : `<li>${ic('stretch')} Movilidad · ${minutesOf(RT.mov)} min</li>`;
+    const acts = [];
+    if (ds <= t && !done && r) acts.push(`<button class="dc-a" data-act="mark-done" data-day="${ds}">${ic('check')} La hice</button>`);
+    if (done && h.manual) acts.push(`<button class="dc-a" data-act="unmark" data-day="${ds}">Desmarcar</button>`);
+    if (!done) acts.push(`<button class="dc-a" data-act="change" data-day="${ds}">Cambiar</button>`);
+    return `<article class="dk-card day-card cat-${cat} ${rest ? 'is-rest' : ''}" data-act="open-day" data-day="${ds}">
+      <div class="dc-stage">
+        ${fig}
+        <span class="dc-date"><b>${d.getDate()}</b><span>${DAYS_3[dow(d)]}<br>${MONTHS[d.getMonth()].slice(0, 3)}</span></span>
+        <span class="dc-rel">${rel}</span>
+        ${stamp}
+      </div>
+      <div class="dc-body">
+        <div class="hero-top">${pills}</div>
+        <h2 class="h-display dc-title ${name.length > 22 ? 'is-long' : ''}">${name}</h2>
+        <p class="dc-tag">${tag}</p>
+        <div class="dc-foot"><ul class="hero-meta">${meta}</ul><div class="dc-acts">${acts.join('')}</div></div>
+      </div>
+    </article>`;
+  }
 
+  function weekDots(ds) {
+    const t = today();
+    return weekOf(ds).map((k, i) => {
+      const { r, done } = dayInfo(k);
+      const miss = !done && r && k < t;
+      const n = parse(k).getDate();
+      return `<button class="wdot ${k === ds ? 'is-sel' : ''} ${k === t ? 'is-today' : ''} ${done ? 'is-done' : ''} ${miss ? 'is-miss' : ''} ${r || done ? '' : 'is-rest'} cat-${r ? r.cat : 'mob'}"
+        data-act="pick-day" data-day="${k}" aria-pressed="${k === ds}" aria-label="${DAYS_L[i]} ${n}${done ? ', hecha' : miss ? ', no cumplida' : ''}">
+        <span>${DAYS_S[i]}</span><b>${n}</b><i>${done ? ic('check') : ''}</i></button>`;
+    }).join('');
+  }
+
+  function viewHoy() {
+    const ws = weekStats();
     return `
       <header class="top">
         <span class="brand"><span class="brand-mark">${ic('kettlebell')}</span>Forja</span>
-        <span class="top-date">${cap(longDate(new Date()))}</span>
+        <button class="today-btn" id="today-btn" data-act="day-today" hidden>${ic('today')} Volver a hoy</button>
       </header>
-      <nav class="week" aria-label="Semana">${strip}</nav>
-      ${hero}
-      <button class="btn-ghost block" data-act="change">Cambiar rutina de este día</button>
-      ${ws2}
-      ${isShort(r) ? `<section class="grp"><h2 class="h-sec">Súmale full body</h2><p class="muted">La sesión del PDF de hoy dura ${minutesOf(r)} min. Complétala con pesa rusa.</p>${PLUS.map((id) => rcard(RT[id])).join('')}</section>` : ''}
-      ${r ? `<section class="grp cat-${r.cat}"><h2 class="h-sec">Ejercicios de hoy</h2>${sectionsHTML(r)}</section>` : ''}`;
+      <nav class="wdots" id="wdots" aria-label="Semana"></nav>
+      <div class="deck days" id="day-deck" aria-label="Días: desliza a la izquierda o a la derecha"></div>
+      <div class="dk-ctrl">
+        <button class="dk-btn" data-act="day-go" data-d="-1" aria-label="Día anterior">${ic('left')}</button>
+        <button class="dk-go" id="day-open" data-act="open-day">${ic('play')} Ver rutina</button>
+        <button class="dk-btn" data-act="day-go" data-d="1" aria-label="Día siguiente">${ic('chevron')}</button>
+      </div>
+      <p class="dk-help">Desliza la tarjeta para cambiar de día</p>
+      <div id="day-extra" class="grp"></div>
+      <section class="stats" aria-label="Resumen">
+        <div class="stat"><span class="stat-n">${streak()}</span><span class="stat-l">${ic('flame')} Racha</span></div>
+        <div class="stat"><span class="stat-n">${ws.n}</span><span class="stat-l">Esta semana</span></div>
+        <div class="stat"><span class="stat-n">${ws.min}</span><span class="stat-l">Minutos</span></div>
+      </section>`;
+  }
+
+  // Actualiza lo que depende del día elegido sin rehacer la tarjeta.
+  function syncHoy() {
+    const ds = ui.day;
+    const { r, done } = dayInfo(ds);
+    $('#wdots').innerHTML = weekDots(ds);
+    $('#today-btn').hidden = ds === today();
+    $('#day-open').innerHTML = r ? `${ic('play')} ${done ? 'Ver rutina' : 'Ver ejercicios'}` : `${ic('stretch')} Movilidad`;
+    const extra = $('#day-extra');
+    extra.innerHTML = !done && ds >= today() && isShort(r)
+      ? `<h2 class="h-sec">Súmale full body</h2><p class="muted">La sesión del PDF de este día dura ${minutesOf(r)} min. Complétala con pesa rusa.</p>${PLUS.map((id) => rcard(RT[id])).join('')}`
+      : '';
+    FIG.hydrate(extra);
+  }
+
+  let dayDeck = null;
+  function mountHoy() {
+    const root = $('#day-deck');
+    if (!root) { dayDeck = null; return; }
+    const first = !ui.nudged;
+    ui.nudged = true;
+    dayDeck = makeDeck(root, {
+      i: Math.max(-DAY_RANGE, Math.min(DAY_RANGE, dayIndex(ui.day))),
+      has: (k) => Math.abs(k) <= DAY_RANGE,
+      get: dayCard,
+      hint: (k) => { const d = parse(dayAt(k)); return `${DAYS_3[dow(d)]} ${d.getDate()}`; },
+      onChange: (k) => { ui.day = dayAt(k); syncHoy(); startRotor(); }
+    });
+    if (first) root.classList.add('nudge');
+  }
+
+  /* ---------- Mazo de tarjetas: se arrastran a los lados como en Tinder ---------- */
+  // o: { i, has(i), get(i, arriba) → html, hint(i) → texto, onChange(i) }
+  function makeDeck(root, o) {
+    const st = { i: o.i, drag: null, busy: false, swallow: false };
+    const slot = (pos) => root.querySelector(`:scope > .dk-slot.is-${pos}`);
+    const reducedMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function paint() {
+      const html = (k, pos) => {
+        if (!o.has(k)) return '';
+        const top = pos === 'top';
+        const hints = top
+          ? `<span class="dk-hint is-l">${o.has(k - 1) ? `${ic('left')} ${o.hint(k - 1)}` : ''}</span><span class="dk-hint is-r">${o.has(k + 1) ? `${o.hint(k + 1)} ${ic('chevron')}` : ''}</span>`
+          : '';
+        return `<div class="dk-slot is-${pos}" ${top ? '' : 'aria-hidden="true" inert'}>${o.get(k, top)}${hints}</div>`;
+      };
+      root.innerHTML = html(st.i - 1, 'prev') + html(st.i + 1, 'next') + html(st.i, 'top');
+      FIG.hydrate(root);
+      if (o.onChange) o.onChange(st.i);
+    }
+    function setTop(dx, dy, tr) {
+      const top = slot('top');
+      if (!top) return;
+      top.style.transition = tr || '';
+      top.style.transform = dx || dy ? `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)` : '';
+      const p = Math.min(1, Math.abs(dx) / ((root.clientWidth || 1) * 0.3));
+      top.style.setProperty('--hl', dx > 0 ? p : 0);
+      top.style.setProperty('--hr', dx < 0 ? p : 0);
+    }
+    // dir +1: siguiente (la tarjeta sale por la izquierda) · dir -1: anterior.
+    function under(dir, p, tr) {
+      const show = slot(dir > 0 ? 'next' : 'prev');
+      const hide = slot(dir > 0 ? 'prev' : 'next');
+      if (hide) hide.style.opacity = '0';
+      if (show) {
+        show.style.transition = tr || '';
+        show.style.opacity = '1';
+        show.style.transform = `translateY(${14 * (1 - p)}px) scale(${0.95 + 0.05 * p})`;
+      }
+    }
+    function reset(anim) {
+      setTop(0, 0, anim ? 'transform .45s cubic-bezier(.2, .9, .3, 1.25)' : '');
+      ['prev', 'next'].forEach((pos) => {
+        const el = slot(pos);
+        if (!el) return;
+        el.style.transition = anim ? 'transform .35s ease, opacity .2s' : '';
+        el.style.transform = '';
+        el.style.opacity = '';
+      });
+    }
+    function fly(dir, dy) {
+      if (st.busy) return;
+      if (!o.has(st.i + dir)) { reset(true); return; }
+      root.classList.remove('nudge');
+      if (reducedMotion()) { st.i += dir; paint(); return; }
+      st.busy = true;
+      const w = root.clientWidth || 360;
+      setTop(-dir * w * 1.35, dy || 0, 'transform .3s cubic-bezier(.4, .1, .7, 1)');
+      under(dir, 1, 'transform .3s ease');
+      setTimeout(() => { st.i += dir; st.busy = false; paint(); }, 290);
+    }
+
+    root.addEventListener('pointerdown', (e) => {
+      st.swallow = false;
+      if (st.busy || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      const top = slot('top');
+      if (!top || !top.contains(e.target)) return;
+      reset(false);
+      st.drag = { x: e.clientX, y: e.clientY, t: performance.now(), dx: 0, dy: 0, on: false, id: e.pointerId };
+    });
+    root.addEventListener('pointermove', (e) => {
+      const d = st.drag;
+      if (!d || e.pointerId !== d.id) return;
+      d.dx = e.clientX - d.x;
+      d.dy = e.clientY - d.y;
+      if (!d.on) {
+        if (Math.abs(d.dx) > 8 && Math.abs(d.dx) > Math.abs(d.dy)) {
+          d.on = true;
+          root.classList.add('is-drag');
+          root.classList.remove('nudge');
+          try { slot('top').setPointerCapture(d.id); } catch (err) { /* sin captura */ }
+        } else {
+          if (Math.abs(d.dy) > 10) st.drag = null;
+          return;
+        }
+      }
+      const dir = d.dx < 0 ? 1 : -1;
+      const ok = o.has(st.i + dir);
+      const dx = ok ? d.dx : d.dx * 0.3; // en el borde se resiste
+      setTop(dx, d.dy * 0.15);
+      if (!ok) { const top = slot('top'); top.style.setProperty('--hl', 0); top.style.setProperty('--hr', 0); }
+      under(dir, Math.min(1, Math.abs(dx) / ((root.clientWidth || 1) * 0.5)));
+    });
+    root.addEventListener('pointerup', (e) => {
+      const d = st.drag;
+      if (!d || e.pointerId !== d.id) return;
+      st.drag = null;
+      if (!d.on) return;
+      root.classList.remove('is-drag');
+      st.swallow = true;
+      const w = root.clientWidth || 360;
+      const v = d.dx / Math.max(1, performance.now() - d.t);
+      const dir = d.dx < 0 ? 1 : -1;
+      if (o.has(st.i + dir) && (Math.abs(d.dx) > w * 0.25 || (Math.abs(v) > 0.5 && Math.abs(d.dx) > 30))) fly(dir, d.dy * 0.15);
+      else reset(true);
+    });
+    root.addEventListener('pointercancel', () => {
+      if (st.drag && st.drag.on) { root.classList.remove('is-drag'); reset(true); }
+      st.drag = null;
+    });
+    // Un arrastre no cuenta como toque.
+    root.addEventListener('click', (e) => {
+      if (!st.swallow) return;
+      st.swallow = false;
+      e.stopPropagation();
+      e.preventDefault();
+    }, true);
+
+    paint();
+    return {
+      go: (dir) => fly(dir),
+      jump: (k) => { if (o.has(k)) { st.i = k; paint(); } },
+      paint
+    };
+  }
+
+  /* ---------- Rutina abierta: un mazo con sus ejercicios ---------- */
+  let exDeck = null;
+  // "4 rondas" salvo que el título de la sección ya lo diga.
+  const roundsOf = (s) => (s.rounds > 1 && !/ronda/i.test(s.title) ? `${s.rounds} rondas` : '');
+  function introCard(r, top) {
+    const exs = [...new Set(r.sections.flatMap((s) => s.items.map((it) => it.ex)))];
+    const gear = [...new Set(exs.map((e) => EX[e].gear).filter(Boolean))];
+    const notes = [];
+    if (r.note) notes.push(r.note);
+    if (gear.length) notes.push(`Necesitas: ${gear.join(', ').toLowerCase()}.`);
+    if (exs.some((e) => EX[e].floor)) notes.push('Incluye ejercicios en el suelo.');
+    const figs = showcase(r, 4);
+    const blocks = r.sections.map((s) => `<li><b>${s.title}</b><span>${roundsOf(s) ? `${roundsOf(s)} · ` : ''}${ejN(s.items.length)}</span></li>`).join('');
+    return `<article class="dk-card intro-card cat-${r.cat}">
+      <div class="in-grid n${figs.length}">${figs.map((id) => `<span class="in-cell fig" data-fig="${id}" ${top ? 'data-live' : ''}></span>`).join('')}</div>
+      <div class="dc-body">
+        <div class="hero-top"><span class="pill">${r.sess ? `Programa · semana ${r.sess.w}` : CATS[r.cat].label}</span><span class="pill">${ic('clock')} ${minutesOf(r)} min</span><span class="pill">${ejN(countOf(r))}</span></div>
+        <h2 class="h-display dc-title ${r.name.length > 22 ? 'is-long' : ''}">${r.name}</h2>
+        <p class="dc-tag">${r.tagline}</p>
+        <ul class="in-blocks">${blocks}</ul>
+        ${notes.length ? `<p class="in-note">${notes.join(' ')}</p>` : ''}
+        <p class="in-swipe">Desliza para ver cada ejercicio ${ic('chevron')}</p>
+      </div>
+    </article>`;
+  }
+  function exCard(r, x, k, total, top) {
+    const e = EX[x.it.ex];
+    const name = e.n + (x.it.max ? ' · máx' : '');
+    return `<article class="dk-card ex-card cat-${r.cat}" data-act="ex" data-ex="${x.it.ex}" data-cat="${r.cat}">
+      <div class="dc-stage">
+        <div class="stage-fig fig" data-fig="${x.it.ex}" ${top ? 'data-animate data-trace' : ''} role="img" aria-label="Demostración de ${e.n}"></div>
+        <span class="ec-sec">${x.s.title}${roundsOf(x.s) ? ` · ${roundsOf(x.s)}` : ''}</span>
+        <span class="ec-spec">${specOf(x.it)}</span>
+      </div>
+      <div class="dc-body">
+        <span class="ec-num">${k} de ${total}</span>
+        <h2 class="h-display dc-title ${name.length > 22 ? 'is-long' : ''}">${name}</h2>
+        <div class="chips on-cat">${e.m.map((m) => `<span class="chip">${m}</span>`).join('')}${e.floor ? '<span class="chip">En el suelo</span>' : ''}</div>
+        <p class="dc-tag ec-cue">${e.c}</p>
+        <span class="ec-more">${ic('list')} Toca para ver inicio y final</span>
+      </div>
+    </article>`;
+  }
+  function openDeck(id, ds) {
+    const r = byId(id);
+    if (!r) return;
+    closeSheet();
+    stopRotor();
+    const items = [];
+    r.sections.forEach((s) => s.items.forEach((it) => items.push({ s, it })));
+    const n = items.length + 1;
+    const when = ds ? cap(longDate(parse(ds))) : r.sess ? `Programa · semana ${r.sess.w}` : CATS[r.cat].label;
+    const root = $('#deckv');
+    root.innerHTML = `<div class="dv cat-${r.cat}" role="dialog" aria-modal="true" aria-label="${r.name}">
+      <div class="dv-in">
+        <header class="dv-top">
+          <button class="dv-ib" data-act="dv-close" aria-label="Volver">${ic('left')}</button>
+          <div class="dv-title"><b>${r.name}</b><span>${when}</span></div>
+          <span class="dv-count" id="dv-count" aria-live="polite"></span>
+        </header>
+        <div class="dv-segs ${n > 36 ? 'is-thin' : ''}" id="dv-segs" aria-hidden="true">${'<i></i>'.repeat(n)}</div>
+        <div class="deck ex" id="ex-deck" aria-label="Ejercicios: desliza a la izquierda o a la derecha"></div>
+        <div class="dk-ctrl">
+          <button class="dk-btn" data-act="ex-go" data-d="-1" aria-label="Ejercicio anterior">${ic('left')}</button>
+          <button class="dk-go" data-act="start" data-id="${r.id}">${ic('play')} Iniciar</button>
+          <button class="dk-btn" data-act="ex-go" data-d="1" aria-label="Ejercicio siguiente">${ic('chevron')}</button>
+        </div>
+      </div>
+    </div>`;
+    root.hidden = false;
+    document.body.classList.add('no-scroll');
+    exDeck = makeDeck($('#ex-deck'), {
+      i: 0,
+      has: (k) => k >= 0 && k < n,
+      get: (k, top) => (k === 0 ? introCard(r, top) : exCard(r, items[k - 1], k, n - 1, top)),
+      hint: (k) => (k === 0 ? 'Resumen' : EX[items[k - 1].it.ex].n),
+      onChange: (k) => {
+        $('#dv-count').textContent = k === 0 ? 'Resumen' : `${k}/${n - 1}`;
+        document.querySelectorAll('#dv-segs i').forEach((el, j) => el.classList.toggle('on', j <= k));
+      }
+    });
+    $('.dv-ib', root).focus();
+  }
+  function closeDeck(keepScroll) {
+    const root = $('#deckv');
+    if (root.hidden) return;
+    root.hidden = true;
+    root.innerHTML = '';
+    exDeck = null;
+    if (!keepScroll && !P) { document.body.classList.remove('no-scroll'); startRotor(); }
   }
 
   function libSwitch() {
@@ -491,7 +747,7 @@
       const cats = [...new Set(S.hist.filter((h) => h.d === ds).map(histCat).filter(Boolean))];
       cells += `<span class="cal-d ${ds === t ? 'is-today' : ''} ${cats.length ? 'has' : ''}"><span>${d}</span><i class="dots">${cats.map((c) => `<b class="cat-${c}"></b>`).join('')}</i></span>`;
     }
-    const recent = [...S.hist].sort((a, b) => b.t - a.t).slice(0, 12);
+    const recent = [...S.hist].sort((a, b) => (a.d === b.d ? b.t - a.t : a.d < b.d ? 1 : -1)).slice(0, 12);
     const effort = ['', 'Suave', 'Bien', 'Duro'];
     const list = recent.length
       ? recent.map((h) => {
@@ -550,6 +806,7 @@
       b.classList.toggle('is-on', on);
       if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
+    if (ui.tab === 'hoy') mountHoy(); else dayDeck = null;
     FIG.hydrate(view);
     startRotor();
   }
@@ -597,7 +854,7 @@
     if (sh.hidden) return;
     sh.hidden = true;
     sh.innerHTML = '';
-    if (!P) {
+    if (!P && $('#deckv').hidden) {
       document.body.classList.remove('no-scroll');
       if (lastFocus && lastFocus.focus) lastFocus.focus();
     }
@@ -611,30 +868,6 @@
     toastT = setTimeout(() => { el.hidden = true; }, 1800);
   }
 
-  function detailSheet(id) {
-    const r = byId(id);
-    if (!r) return;
-    const exs = [...new Set(r.sections.flatMap((s) => s.items.map((it) => it.ex)))];
-    const floor = exs.some((e) => EX[e].floor);
-    const gear = [...new Set(exs.map((e) => EX[e].gear).filter(Boolean))];
-    const notes = [];
-    if (r.template) notes.push('Esta es una rutina de ejemplo.');
-    if (r.note) notes.push(r.note);
-    if (gear.length) notes.push(`Necesitas: ${gear.join(', ').toLowerCase()}.`);
-    if (floor) notes.push('Incluye ejercicios en el suelo.');
-    openSheet(`
-      <button class="sheet-x" data-act="close-sheet" aria-label="Cerrar">${ic('close')}</button>
-      <div class="sheet-body">
-        <p class="eyebrow">${r.sess ? `Programa · semana ${r.sess.w}` : CATS[r.cat].label}</p>
-        <h2 class="h-display sheet-title ${r.name.length > 22 ? 'is-long' : ''}">${r.name}</h2>
-        <p class="sheet-sub">${r.tagline}</p>
-        <div class="chips">${r.focus.map((f) => `<span class="chip">${f}</span>`).join('')}</div>
-        <ul class="hero-meta flat"><li>${ic('clock')} ${minutesOf(r)} min</li><li>${ic('list')} ${ejN(countOf(r))}</li></ul>
-        ${notes.length ? `<p class="note">${notes.join(' ')}</p>` : ''}
-        ${sectionsHTML(r)}
-      </div>
-      <div class="sheet-cta"><button class="btn-cta solid" data-act="start" data-id="${r.id}">${ic('play')} Empezar</button></div>`, r.cat);
-  }
   function exSheet(id, cat) {
     const e = EX[id];
     const tags = [...e.m, ...(e.floor ? ['En el suelo'] : []), ...(e.gear ? [e.gear] : [])];
@@ -767,6 +1000,7 @@
     const r = byId(id);
     if (!r) return;
     closeSheet();
+    closeDeck(true);
     stopRotor();
     ac();
     P = { r, steps: stepsOf(r), i: 0, paused: false, t0: Date.now(), pausedMs: 0, pauseAt: 0, remMs: 0, endAt: 0, dur: 0, lastSec: null, swapped: false, stepAt: 0, timer: null, confirm: false, wasPaused: false, done: false };
@@ -887,7 +1121,7 @@
     const r = P.r;
     const entry = { d: today(), r: r.id, n: r.name, c: r.cat, m: Math.max(1, Math.round(active / 60000)), e: 0, t: Date.now() };
     S.hist.push(entry);
-    if (r.sess) S.done[sessKey(r.sess.w, r.sess.idx)] = entry.d;
+    if (r.sess) { S.done[sessKey(r.sess.w, r.sess.idx)] = entry.d; if (r.sess.w > S.week) S.week = r.sess.w; }
     save();
     P.entry = entry;
     [523, 659, 784, 1046].forEach((f, k) => tone(f, 0.22, k * 0.14));
@@ -929,10 +1163,39 @@
   /* ---------- Acciones ---------- */
   const actions = {
     tab(b) { ui.tab = b.dataset.tab; ui.confirmReset = false; render(); window.scrollTo(0, 0); },
-    'pick-day'(b) { ui.day = b.dataset.day; render(); },
+    'pick-day'(b) { if (dayDeck) dayDeck.jump(dayIndex(b.dataset.day)); else { ui.day = b.dataset.day; render(); } },
     start(b) { startRoutine(b.dataset.id); },
-    detail(b) { detailSheet(b.dataset.id); },
-    sess(b) { detailSheet(`s:${b.dataset.w}:${b.dataset.i}:${b.dataset.o}`); },
+    detail(b) { openDeck(b.dataset.id); },
+    sess(b) { openDeck(`s:${b.dataset.w}:${b.dataset.i}:${b.dataset.o}`); },
+    'open-day'() {
+      const { h, r } = dayInfo(ui.day);
+      openDeck(r ? r.id : h ? h.r : 'mov', ui.day);
+    },
+    'day-go'(b) { if (dayDeck) dayDeck.go(Number(b.dataset.d)); },
+    'day-today'() { if (dayDeck) dayDeck.jump(0); },
+    'ex-go'(b) { if (exDeck) exDeck.go(Number(b.dataset.d)); },
+    'dv-close'() { closeDeck(); },
+    'mark-done'(b) {
+      const ds = b.dataset.day;
+      const { r, done } = dayInfo(ds);
+      if (!r || done) return;
+      S.hist.push({ d: ds, r: r.id, n: r.name, c: r.cat, m: minutesOf(r), e: 0, t: Date.now(), manual: 1 });
+      if (r.sess) { S.done[sessKey(r.sess.w, r.sess.idx)] = ds; if (r.sess.w > S.week) S.week = r.sess.w; }
+      save();
+      render();
+      toast('Marcada como hecha');
+    },
+    unmark(b) {
+      const ds = b.dataset.day;
+      S.hist.filter((h) => h.d === ds && h.manual).forEach((h) => {
+        const r = byId(h.r);
+        if (r && r.sess && S.done[sessKey(r.sess.w, r.sess.idx)] === ds) delete S.done[sessKey(r.sess.w, r.sess.idx)];
+      });
+      S.hist = S.hist.filter((h) => !(h.d === ds && h.manual));
+      save();
+      render();
+      toast('Desmarcada');
+    },
     ex(b) { exSheet(b.dataset.ex, b.dataset.cat); },
     change() { changeSheet(); },
     goal(b) { ui.goal = b.dataset.g; render(); },
@@ -1003,12 +1266,17 @@
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       if (!$('#sheet').hidden) return closeSheet();
+      if (!$('#deckv').hidden) return closeDeck();
       if (P && !P.done) return P.confirm ? actions['pl-stay']() : actions['pl-exit']();
     }
     if (P && !P.done && !P.confirm) {
       if (e.key === ' ' && !e.target.closest('button')) { e.preventDefault(); P.endAt ? togglePause() : next(); }
       if (e.key === 'ArrowRight') next();
       if (e.key === 'ArrowLeft') prev();
+    }
+    if (!P && $('#sheet').hidden && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !e.target.closest('select, input')) {
+      const dk = !$('#deckv').hidden ? exDeck : ui.tab === 'hoy' ? dayDeck : null;
+      if (dk) dk.go(e.key === 'ArrowRight' ? 1 : -1);
     }
   });
 
