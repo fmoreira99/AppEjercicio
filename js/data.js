@@ -310,8 +310,8 @@
       ]
     },
     {
-      id: 'kb-express', cat: 'kb', goal: 'cardio', name: 'Express 15 minutos',
-      tagline: 'Para días con poco tiempo: cuatro ejercicios, tres rondas.',
+      id: 'kb-express', cat: 'kb', goal: 'cardio', name: 'Express full body',
+      tagline: 'Unos 15 minutos para días con poco tiempo: cuatro ejercicios, tres rondas.',
       focus: ['Cardio', 'Cuerpo completo'],
       sections: [
         { title: 'Activación', rounds: 1, work: 30, rest: 10, items: [i('halo'), i('aire')] },

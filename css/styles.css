@@ -411,6 +411,8 @@ code { font: 600 .85em ui-monospace, Menlo, Consolas, monospace; background: var
 .fin-eff button { flex: 1; min-height: 52px; border-radius: 999px; font-weight: 800; border: 2px solid currentColor; transition: background-color .15s, color .15s; text-align: center; }
 .fin-eff button[aria-pressed="true"] { background: var(--on-cat); color: var(--cat); border-color: var(--on-cat); }
 .pl-back { width: 100%; min-height: 58px; border-radius: 999px; background: var(--on-cat); color: var(--cat); font-weight: 800; font-size: 1.0625rem; margin-top: 6px; text-align: center; }
+.pl-more { width: 100%; min-height: 58px; border-radius: 999px; border: 2px solid var(--on-cat); color: var(--on-cat); font-weight: 800; font-size: 1.0625rem; margin-top: 6px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.pl-more .ic { width: 18px; height: 18px; }
 
 @keyframes rise { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }

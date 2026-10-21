@@ -19,11 +19,13 @@ El PDF no dice cuántas rondas tiene Zeus; se dejaron 3 (cámbialo en `js/data.j
 | Categoría | Rutina |
 |---|---|
 | Cardio y fuerza | Los 14 entrenamientos del PDF |
-| Pesa rusa | Full body volumen · Cuerpo completo (full body) · Quema grasa HIIT · Complejo full body · Piernas y glúteos · Hombros, espalda y brazos · Abdomen y brazos · Abdomen de pie · Express 15 minutos |
+| Pesa rusa | Full body volumen · Cuerpo completo (full body) · Quema grasa HIIT · Complejo full body · Piernas y glúteos · Hombros, espalda y brazos · Abdomen y brazos · Abdomen de pie · Express full body |
 | Mancuernas | Full body volumen · Brazos y hombros · Quema grasa · Tren superior · Piernas y glúteos |
 | Movilidad | Movilidad de pie (días de descanso) |
 
 Cada rutina tiene un objetivo (volumen, cardio, fuerza, abdomen o movilidad) y se puede filtrar en la pestaña Rutinas. En esa pestaña, **Ejercicios** muestra los 77 ejercicios con su animación, por material.
+
+Los días del PDF que duran menos de 25 min (por ejemplo Burpee MAX) sugieren sumar un full body con pesa rusa, en Hoy y al terminar la sesión.
 
 Plan por defecto: Lun/Mié/Vie programa del PDF; Mar pesa rusa de volumen; Jue mancuernas de volumen; Sáb pesa rusa de cardio; Dom descanso. Se cambia desde la pestaña Rutinas.
 

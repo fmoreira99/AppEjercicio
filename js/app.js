@@ -266,6 +266,26 @@
     return ids.slice(0, max);
   }
 
+  function rcard(r) {
+    const sc = showcase(r, 2);
+    return `<button class="rcard cat-${r.cat}" data-act="detail" data-id="${r.id}">
+      <span class="rcard-body">
+        <span class="pill">${ic(CATS[r.cat].icon)} ${minutesOf(r)} min</span>
+        <b class="rcard-name">${r.name}</b>
+        <span class="rcard-tag">${r.tagline}</span>
+        <span class="rcard-meta">${GOALS[r.goal] || ''} · ${ejN(countOf(r))}</span>
+      </span>
+      <span class="rcard-art" aria-hidden="true">
+        <span class="disc d1 fig" data-fig="${sc[0]}" data-live></span>
+        ${sc[1] ? `<span class="disc d2 fig" data-fig="${sc[1]}" data-live></span>` : ''}
+      </span>
+    </button>`;
+  }
+
+  // Sesiones cortas del PDF: se sugiere sumar un full body con pesa rusa.
+  const PLUS = ['kb-express', 'kb-full'];
+  const isShort = (r) => !!r && r.src === 'pdf' && minutesOf(r) < 25;
+
   function viewHoy() {
     const t = today();
     const week = weekOf(t);
@@ -346,6 +366,7 @@
       ${hero}
       <button class="btn-ghost block" data-act="change">Cambiar rutina de este día</button>
       ${ws2}
+      ${isShort(r) ? `<section class="grp"><h2 class="h-sec">Súmale full body</h2><p class="muted">La sesión del PDF de hoy dura ${minutesOf(r)} min. Complétala con pesa rusa.</p>${PLUS.map((id) => rcard(RT[id])).join('')}</section>` : ''}
       ${r ? `<section class="grp cat-${r.cat}"><h2 class="h-sec">Ejercicios de hoy</h2>${sectionsHTML(r)}</section>` : ''}`;
   }
 
@@ -384,21 +405,7 @@
     const groups = Object.keys(CATS).map((c) => {
       const rs = ROUTINES.filter((r) => r.cat === c && (ui.goal === 'todas' || r.goal === ui.goal));
       if (!rs.length) return '';
-      return `<section class="grp"><h2 class="h-sec">${CATS[c].label}${c === 'mix' ? ' · entrenamientos del PDF' : ''}</h2>${rs.map((r) => {
-        const sc = showcase(r, 2);
-        return `<button class="rcard cat-${r.cat}" data-act="detail" data-id="${r.id}">
-          <span class="rcard-body">
-            <span class="pill">${ic(CATS[r.cat].icon)} ${minutesOf(r)} min</span>
-            <b class="rcard-name">${r.name}</b>
-            <span class="rcard-tag">${r.tagline}</span>
-            <span class="rcard-meta">${GOALS[r.goal] || ''} · ${ejN(countOf(r))}</span>
-          </span>
-          <span class="rcard-art" aria-hidden="true">
-            <span class="disc d1 fig" data-fig="${sc[0]}" data-live></span>
-            ${sc[1] ? `<span class="disc d2 fig" data-fig="${sc[1]}" data-live></span>` : ''}
-          </span>
-        </button>`;
-      }).join('')}</section>`;
+      return `<section class="grp"><h2 class="h-sec">${CATS[c].label}${c === 'mix' ? ' · entrenamientos del PDF' : ''}</h2>${rs.map(rcard).join('')}</section>`;
     }).join('');
 
     const opt = (id, label, cur) => `<option value="${id}" ${cur === id ? 'selected' : ''}>${label}</option>`;
@@ -900,6 +907,7 @@
       <div class="fin-eff" role="group" aria-label="Esfuerzo">
         ${[[1, 'Suave'], [2, 'Bien'], [3, 'Duro']].map(([v, l]) => `<button data-act="effort" data-v="${v}" aria-pressed="false">${l}</button>`).join('')}
       </div>
+      ${isShort(r) ? `<button class="pl-more" data-act="start" data-id="${PLUS[0]}">${ic('play')} Seguir con full body · ${minutesOf(RT[PLUS[0]])} min</button>` : ''}
       <button class="pl-back" data-act="pl-close">Volver al inicio</button>
     </div></div>`;
   }
