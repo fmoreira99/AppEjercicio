@@ -134,10 +134,10 @@
     return r.sections.map((s) => `
       <div class="blk">
         <div class="blk-h"><h3>${s.title}</h3><span>${s.rounds > 1 ? s.rounds + ' rondas' : ''}</span></div>
-        <ol class="exlist">${s.items.map((it, k) => {
+        <ol class="exlist">${s.items.map((it) => {
           const e = EX[it.ex];
-          return `<li><button class="exrow" data-act="ex" data-ex="${it.ex}">
-            <span class="exrow-n">${k + 1}</span>
+          return `<li><button class="exrow" data-act="ex" data-ex="${it.ex}" data-cat="${r.cat}">
+            <span class="exrow-fig fig" data-fig="${it.ex}"></span>
             <span class="exrow-t"><b>${e.n}</b><small>${e.m.join(' · ')}</small></span>
             <span class="exrow-s">${specOf(it)}</span>
           </button></li>`;
@@ -203,7 +203,7 @@
       ${hero}
       <button class="btn-ghost block" data-act="change">Cambiar rutina de este día</button>
       ${ws2}
-      ${r ? `<section class="grp"><h2 class="h-sec">Incluye</h2>${sectionsHTML(r)}</section>` : ''}`;
+      ${r ? `<section class="grp cat-${r.cat}"><h2 class="h-sec">Incluye</h2>${sectionsHTML(r)}</section>` : ''}`;
   }
 
   function viewRutinas() {
@@ -295,6 +295,7 @@
       b.classList.toggle('is-on', on);
       if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
+    FIG.hydrate(view);
   }
 
   /* ---------- Hojas (sheets) y aviso ---------- */
@@ -306,6 +307,7 @@
       <div class="sheet-panel ${cat ? 'cat-' + cat : ''}" role="dialog" aria-modal="true" tabindex="-1">${html}</div>`;
     sh.hidden = false;
     document.body.classList.add('no-scroll');
+    FIG.hydrate(sh);
     $('.sheet-panel', sh).focus();
   }
   function closeSheet() {
@@ -342,16 +344,17 @@
       </div>
       <div class="sheet-cta"><button class="btn-cta solid" data-act="start" data-id="${r.id}">${ic('play')} Empezar</button></div>`, r.cat);
   }
-  function exSheet(id) {
+  function exSheet(id, cat) {
     const e = EX[id];
     openSheet(`
       <button class="sheet-x" data-act="close-sheet" aria-label="Cerrar">${ic('close')}</button>
       <div class="sheet-body">
         <p class="eyebrow">Ejercicio</p>
         <h2 class="h-display sheet-title">${e.n}</h2>
+        <div class="sheet-fig fig" data-fig="${id}" data-animate role="img" aria-label="Demostración de ${e.n}"></div>
         <div class="chips">${e.m.map((x) => `<span class="chip">${x}</span>`).join('')}</div>
         <p class="sheet-cue">${e.c}</p>
-      </div>`);
+      </div>`, cat);
   }
   function changeSheet() {
     const ds = ui.day;
@@ -426,12 +429,15 @@
         <div class="pl-bar" role="progressbar" aria-label="Progreso de la rutina"><i id="pl-fill"></i></div>
         <div class="pl-stage">
           <p class="pl-phase" id="pl-phase"></p>
-          <div class="ring">
-            <svg viewBox="0 0 200 200" aria-hidden="true">
-              <circle class="ring-track" cx="100" cy="100" r="88"/>
-              <circle class="ring-prog" id="ring-prog" cx="100" cy="100" r="88" transform="rotate(-90 100 100)"/>
-            </svg>
-            <div class="ring-c"><span class="ring-n" id="pl-time"></span><span class="ring-u" id="pl-unit"></span></div>
+          <div class="pl-row">
+            <div class="ring">
+              <svg viewBox="0 0 200 200" aria-hidden="true">
+                <circle class="ring-track" cx="100" cy="100" r="88"/>
+                <circle class="ring-prog" id="ring-prog" cx="100" cy="100" r="88" transform="rotate(-90 100 100)"/>
+              </svg>
+              <div class="ring-c"><span class="ring-n" id="pl-time"></span><span class="ring-u" id="pl-unit"></span></div>
+            </div>
+            <div class="pl-fig fig" id="pl-fig" role="img" aria-label="Demostración del ejercicio"></div>
           </div>
           <div class="pl-info">
             <p class="pl-pre">Sigue</p>
@@ -494,6 +500,7 @@
     $('#pl-sec').textContent = `${w.section}${w.rounds > 1 ? ` · Ronda ${w.round}/${w.rounds}` : ''} · ${w.idx}/${w.count}`;
     $('#pl-name').textContent = ex.n;
     $('#pl-cue').textContent = ex.c;
+    FIG.mount($('#pl-fig'), w.ex, { animate: true });
     $('#pl-m').innerHTML = ex.m.map((m) => `<span class="chip">${m}</span>`).join('');
     $('#pl-fill').style.width = `${(i / P.steps.length) * 100}%`;
     const ring = $('#ring-prog');
@@ -618,7 +625,7 @@
     'pick-day'(b) { ui.day = b.dataset.day; render(); },
     start(b) { startRoutine(b.dataset.id); },
     detail(b) { detailSheet(b.dataset.id); },
-    ex(b) { exSheet(b.dataset.ex); },
+    ex(b) { exSheet(b.dataset.ex, b.dataset.cat); },
     change() { changeSheet(); },
     'set-over'(b) { S.over[ui.day] = b.dataset.id; save(); closeSheet(); render(); },
     'clear-over'() { delete S.over[ui.day]; save(); closeSheet(); render(); },

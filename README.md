@@ -1,6 +1,6 @@
 # Forja
 
-App personal de ejercicio: plan semanal, rutinas con temporizador guiado (sonido y voz), y registro de progreso. Todos los ejercicios son de pie.
+App personal de ejercicio: plan semanal, rutinas con temporizador guiado (sonido y voz), y registro de progreso. Todos los ejercicios son de pie y cada uno tiene una figura animada de referencia (postura inicial y final).
 
 ## Usar
 
@@ -21,4 +21,4 @@ Plan por defecto: Lun/Mié/Vie cardio y fuerza; Mar, Jue y Sáb pesas; Dom desca
 
 ## Editar rutinas
 
-Todo está en `js/data.js`: ejercicios (`EX`) y rutinas (`ROUTINES`). La rutina "Cardio + Fuerza" es de ejemplo; reemplázala por la del PDF.
+Todo está en `js/data.js`: ejercicios (`EX`) y rutinas (`ROUTINES`). Las figuras animadas de cada ejercicio están en `js/figures.js` (mismo `id` que en `EX`). La rutina "Cardio + Fuerza" es de ejemplo; reemplázala por la del PDF.
