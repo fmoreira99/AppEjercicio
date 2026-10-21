@@ -58,6 +58,37 @@
     kneecrunch: { view: 'side', T: 0.6, poses: [
       { a: [130, 254] },
       { t: 22, a: [45, 250], f: [56, 50], fy: [70, G] }] },
+    highjump: { view: 'side', T: 0.45, poses: [{ hx: 46, hy: 56, t: 22, a: [-40, -40] }, { hy: 41, fy: [76, 76], a: [175, 175] }] },
+    deepsq: { view: 'side', T: 1.0, poses: [{ a: [90, 90] }, { hx: 36, hy: 70, t: 42, a: [90, 90] }] },
+    run: { view: 'side', T: 0.3, poses: [
+      { t: 10, f: [62, 36], fy: [82, 76], a: [-50, -15], a2: [40, 120] },
+      { t: 10, f: [36, 62], fy: [76, 82], a: [40, 120], a2: [-50, -15] }] },
+
+    // Calistenia del programa (varios son en el suelo)
+    burpee: { view: 'side', loop: 'cycle', T: 0.5, poses: [
+      { a: [0, 0] },
+      { hx: 36, hy: 72, t: 55, a: [10, 5], f: [46, 46] },
+      { hx: 40, hy: 61.5, t: 88, h: -20, a: [0, 0], f: [10.5, 10.5] },
+      { hx: 36, hy: 72, t: 55, a: [10, 5], f: [46, 46] },
+      { hy: 40.5, fy: [80, 80], a: [175, 175] }] },
+    pushup: { view: 'side', T: 0.8, poses: [
+      { hx: 40, hy: 61.5, t: 88, h: -20, a: [0, 0], f: [10.5, 10.5] },
+      { hx: 45, hy: 76.4, t: 95, h: -20, a: [-100, 20], f: [7, 7] }] },
+    climbers: { view: 'side', T: 0.3, poses: [
+      { hx: 40, hy: 61.5, t: 88, h: -20, a: [0, 0], f: [54, 10.5], fy: [82, G] },
+      { hx: 40, hy: 61.5, t: 88, h: -20, a: [0, 0], f: [10.5, 54], fy: [G, 82] }] },
+    pullup: { view: 'side', T: 0.9, prop: { k: 'bar' }, poses: [
+      { hx: 50, hy: 58, t: 0, a: [180, 180], f: [48, 48], fy: [84, 84] },
+      { hx: 50, hy: 34, t: 0, h: -10, a: [45, 180], f: [47, 47], fy: [70, 70] }] },
+    situp: { view: 'side', T: 0.8, poses: [
+      { hx: 58, hy: 84, t: -88, a: [175, 175], f: [68, 68] },
+      { hx: 58, hy: 84, t: 12, a: [90, 90], f: [68, 68] }] },
+    leglever: { view: 'side', T: 0.9, poses: [
+      { hx: 40, hy: 84, t: -90, a: [90, 90], f: [79.5, 79.5], fy: [86, 86] },
+      { hx: 40, hy: 84, t: -90, a: [90, 90], f: [44, 44], fy: [44.5, 44.5], kb: -1 }] },
+    jackknife: { view: 'side', T: 0.8, poses: [
+      { hx: 52, hy: 84, t: -90, a: [-90, -90], f: [91, 91], fy: [86, 86] },
+      { hx: 52, hy: 84, t: -35, a: [70, 70], f: [80, 80], fy: [56, 56], kb: -1 }] },
 
     // Pesa rusa
     swing: { view: 'side', T: 0.7, prop: KB, poses: [{ hx: 36, hy: 54, t: 60, a: [-25, -25] }, { t: -3, a: [88, 88] }] },
@@ -243,6 +274,11 @@
     const svg = el('svg', { viewBox: '0 0 100 100', class: 'fig-svg ' + (front ? 'is-front' : 'is-side'), 'aria-hidden': 'true', focusable: 'false' });
     el('ellipse', { class: 'shadow', cx: 50, cy: 91.5, rx: 25, ry: 2.8 }, svg);
     const prop = fig.prop;
+    if (prop && prop.k === 'bar') {
+      el('line', { class: 'bar-post', x1: 18, y1: 10, x2: 18, y2: 90, 'stroke-width': 1.6 }, svg);
+      el('line', { class: 'bar-post', x1: 82, y1: 10, x2: 82, y2: 90, 'stroke-width': 1.6 }, svg);
+      el('line', { class: 'bar-top', x1: 16, y1: 10, x2: 84, y2: 10, 'stroke-width': 2.8 }, svg);
+    }
     const far = el('g', { class: 'far' }, svg);
     const L2 = limbs(far);
     let farProp = null;
