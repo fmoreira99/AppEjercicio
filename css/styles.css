@@ -364,3 +364,7 @@ code { font: 600 .85em ui-monospace, Menlo, Consolas, monospace; background: var
 .fig-svg.is-side .far { opacity: .5; }
 .fig-svg .p-stroke { fill: none; stroke: var(--fig-prop); stroke-linecap: round; stroke-linejoin: round; }
 .fig-svg .p-fill { fill: var(--fig-prop); stroke: none; }
+
+/* Imágenes de referencia propias (img/ejercicios) */
+.fig-img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 12px; }
+.has-photo { overflow: hidden; }

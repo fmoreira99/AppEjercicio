@@ -307,10 +307,27 @@
     if (live.size) raf = requestAnimationFrame(tickAll);
   }
 
+  /* Si existe img/ejercicios/<id>.<ext> se muestra en lugar del muñeco. */
+  const photos = {};
+  function findPhoto(id) {
+    if (!photos[id]) {
+      const ext = (window.FORJA && window.FORJA.IMG_EXT) || 'png';
+      const url = `img/ejercicios/${id}.${ext}`;
+      photos[id] = new Promise((res) => {
+        const im = new Image();
+        im.onload = () => res(url);
+        im.onerror = () => res(null);
+        im.src = url;
+      });
+    }
+    return photos[id];
+  }
+
   function mount(host, id, opts) {
     opts = opts || {};
     if (!host) return;
     if (host._fig) live.delete(host._fig);
+    host.classList.remove('has-photo');
     host.textContent = '';
     const fig = FIGS[id];
     if (!fig) return;
@@ -330,6 +347,18 @@
       live.add(c);
       if (!raf) raf = requestAnimationFrame(tickAll);
     }
+    findPhoto(id).then((url) => {
+      if (!url || host._fig !== c) return;
+      live.delete(c);
+      host.textContent = '';
+      const img = document.createElement('img');
+      img.className = 'fig-img';
+      img.src = url;
+      img.alt = '';
+      img.decoding = 'async';
+      host.appendChild(img);
+      host.classList.add('has-photo');
+    });
   }
 
   function unmount(host) {

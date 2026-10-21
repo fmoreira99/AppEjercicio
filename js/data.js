@@ -156,5 +156,8 @@
   // Lunes a domingo. Cardio + Fuerza día por medio, pesas en los días intermedios.
   const DEFAULT_PLAN = ['pdf', 'kb-full', 'pdf', 'db-upper', 'pdf', 'kb-abs-arms', 'rest'];
 
-  window.FORJA = { CATS, EX, ROUTINES, DEFAULT_PLAN };
+  // Extensión de las imágenes de referencia en img/ejercicios/<id>.<ext> (png, jpg o webp).
+  const IMG_EXT = 'png';
+
+  window.FORJA = { CATS, EX, ROUTINES, DEFAULT_PLAN, IMG_EXT };
 })();

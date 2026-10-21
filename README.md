@@ -22,3 +22,7 @@ Plan por defecto: Lun/Mié/Vie cardio y fuerza; Mar, Jue y Sáb pesas; Dom desca
 ## Editar rutinas
 
 Todo está en `js/data.js`: ejercicios (`EX`) y rutinas (`ROUTINES`). Las figuras animadas de cada ejercicio están en `js/figures.js` (mismo `id` que en `EX`). La rutina "Cardio + Fuerza" es de ejemplo; reemplázala por la del PDF.
+
+## Imágenes propias (Flow)
+
+`flow/prompts.md` tiene un prompt por ejercicio. Las imágenes que generes van en `img/ejercicios/<id>.png` y la app las muestra en lugar del muñeco animado. Los ejercicios sin imagen siguen con el muñeco.
