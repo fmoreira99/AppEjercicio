@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const { CATS, GOALS, EX, ROUTINES, PROGRAM, PROGRAM_NAMES, DEFAULT_PLAN } = window.FORJA;
+  const { CATS, GOALS, EX, EXGROUPS, ROUTINES, PROGRAM, PROGRAM_NAMES, DEFAULT_PLAN } = window.FORJA;
   const RT = Object.fromEntries(ROUTINES.map((r) => [r.id, r]));
   const $ = (s, el = document) => el.querySelector(s);
 
@@ -50,7 +50,7 @@
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* sin almacenamiento */ } }
   const S = load();
 
-  const ui = { tab: 'hoy', day: today(), goal: 'todas', cal: { y: new Date().getFullYear(), m: new Date().getMonth() }, confirmReset: false };
+  const ui = { tab: 'hoy', day: today(), goal: 'todas', lib: 'rutinas', exg: 'todos', cal: { y: new Date().getFullYear(), m: new Date().getMonth() }, confirmReset: false };
 
   /* ---------- Programa del PDF: sesiones ---------- */
   const uniqNames = (parts) => {
@@ -349,8 +349,37 @@
       ${r ? `<section class="grp cat-${r.cat}"><h2 class="h-sec">Ejercicios de hoy</h2>${sectionsHTML(r)}</section>` : ''}`;
   }
 
+  function libSwitch() {
+    const b = (v, label) => `<button class="seg-b ${ui.lib === v ? 'is-on' : ''}" data-act="lib" data-v="${v}" aria-pressed="${ui.lib === v}">${label}</button>`;
+    return `<div class="seg" role="group" aria-label="Ver">${b('rutinas', `Rutinas <i>${ROUTINES.length}</i>`)}${b('ejercicios', `Ejercicios <i>${Object.keys(EX).length}</i>`)}</div>`;
+  }
+
+  function viewEjercicios() {
+    const gs = ['todos', ...EXGROUPS.map((g) => g.id)];
+    const chips = gs.map((g) => `<button class="gchip ${ui.exg === g ? 'is-on' : ''}" data-act="exg" data-g="${g}" aria-pressed="${ui.exg === g}">${g === 'todos' ? 'Todos' : EXGROUPS.find((x) => x.id === g).label}</button>`).join('');
+    const groups = EXGROUPS.filter((g) => ui.exg === 'todos' || ui.exg === g.id).map((g) => {
+      const ids = Object.keys(EX).filter((id) => EX[id].g === g.id);
+      return `<section class="grp cat-${g.cat}"><h2 class="h-sec">${g.label} <span class="h-n">${ids.length}</span></h2><ul class="exgrid">${ids.map((id) => {
+        const e = EX[id];
+        return `<li><button class="excard" data-act="ex" data-ex="${id}" data-cat="${g.cat}">
+          <span class="excard-media">
+            <span class="excard-stage fig" data-fig="${id}" data-live></span>
+            ${e.floor ? '<span class="excard-s">Suelo</span>' : ''}
+          </span>
+          <span class="excard-t"><b>${e.n}</b><small>${e.m.slice(0, 2).join(' · ')}</small></span>
+        </button></li>`;
+      }).join('')}</ul></section>`;
+    }).join('');
+    return `
+      <header class="top"><div><h1 class="h-display page-title">Ejercicios</h1><p class="page-sub">Toca uno para ver cómo se hace.</p></div></header>
+      ${libSwitch()}
+      <div class="gchips" role="group" aria-label="Material">${chips}</div>
+      ${groups}`;
+  }
+
   function viewRutinas() {
-    const goals = ['todas', 'volumen', 'cardio', 'fuerza', 'mov'];
+    if (ui.lib === 'ejercicios') return viewEjercicios();
+    const goals = ['todas', 'volumen', 'cardio', 'fuerza', 'core', 'mov'];
     const chips = goals.map((g) => `<button class="gchip ${ui.goal === g ? 'is-on' : ''}" data-act="goal" data-g="${g}" aria-pressed="${ui.goal === g}">${g === 'todas' ? 'Todas' : GOALS[g]}</button>`).join('');
     const groups = Object.keys(CATS).map((c) => {
       const rs = ROUTINES.filter((r) => r.cat === c && (ui.goal === 'todas' || r.goal === ui.goal));
@@ -384,6 +413,7 @@
 
     return `
       <header class="top"><div><h1 class="h-display page-title">Rutinas</h1><p class="page-sub">Toca una para ver cada ejercicio.</p></div></header>
+      ${libSwitch()}
       <div class="gchips" role="group" aria-label="Objetivo">${chips}</div>
       ${groups || '<p class="empty">No hay rutinas con ese objetivo.</p>'}
       <section class="grp">
@@ -898,6 +928,8 @@
     ex(b) { exSheet(b.dataset.ex, b.dataset.cat); },
     change() { changeSheet(); },
     goal(b) { ui.goal = b.dataset.g; render(); },
+    lib(b) { ui.lib = b.dataset.v; render(); },
+    exg(b) { ui.exg = b.dataset.g; render(); },
     'week-go'(b) { S.week = Math.max(1, Math.min(PROGRAM.length, S.week + Number(b.dataset.d))); save(); render(); window.scrollTo(0, 0); },
     'set-over'(b) { S.over[ui.day] = b.dataset.id; save(); closeSheet(); render(); },
     'clear-over'() { delete S.over[ui.day]; save(); closeSheet(); render(); },

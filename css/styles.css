@@ -445,6 +445,11 @@ code { font: 600 .85em ui-monospace, Menlo, Consolas, monospace; background: var
 .gchips::-webkit-scrollbar { display: none; }
 .gchip { flex: none; min-height: 40px; padding: 0 16px; border-radius: 999px; background: var(--surface); box-shadow: var(--shadow-sm); font: 800 .875rem/1 var(--f-body); color: var(--ink-2); display: inline-flex; align-items: center; transition: background-color .2s, color .2s; }
 .gchip.is-on { background: var(--ink); color: var(--bg); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; background: var(--surface-2); margin-bottom: 12px; }
+.seg-b { min-height: 42px; border-radius: 999px; font: 800 .9375rem/1 var(--f-body); color: var(--ink-2); display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: background-color .2s, color .2s, box-shadow .2s; }
+.seg-b i { font-style: normal; font-size: .75rem; opacity: .6; }
+.seg-b.is-on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); }
+.h-n { font: 800 .8125rem/1 var(--f-body); color: var(--ink-2); margin-left: 4px; }
 .wkhead { display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; align-items: center; gap: 6px 8px; background: var(--cat); color: var(--on-cat); border-radius: var(--r-xl); padding: 14px; box-shadow: var(--shadow); }
 .wk-btn { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, currentColor 16%, transparent); }
 .wk-btn:disabled { opacity: .35; cursor: default; }

@@ -15,11 +15,11 @@ Si un ejercicio no tiene imagen, la app sigue mostrando el muñeco animado.
 
 ## Estilo común
 
-Ya viene incluido al inicio de cada prompt, para que las 56 imágenes se vean parecidas:
+Ya viene incluido al inicio de cada prompt, para que las 77 imágenes se vean parecidas:
 
 > Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form.
 
-## Ejercicios (56)
+## Ejercicios (77)
 
 ### brazos · Círculos de brazos
 Archivo: `brazos.png`
@@ -308,6 +308,104 @@ Archivo: `pressoh.png`
 Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: One-arm kettlebell overhead press. Equipment: one kettlebell held in one hand. Camera: side view. LEFT panel (START position): kettlebell racked at the shoulder, standing tall. RIGHT panel (END position): arm locked out overhead holding the kettlebell, torso upright.
 ```
 
+### snatch · Arranque (snatch)
+Archivo: `snatch.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Kettlebell snatch. Equipment: one kettlebell held in one hand. Camera: side view. LEFT panel (START position): hips hinged back, back flat, the kettlebell hanging between the legs in one hand. RIGHT panel (END position): standing tall with the arm locked straight overhead, the kettlebell resting on the back of the forearm.
+```
+
+### kbclean · Clean con pesa rusa
+Archivo: `kbclean.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Kettlebell clean. Equipment: one kettlebell held in one hand. Camera: side view. LEFT panel (START position): hips hinged back, the kettlebell held between the legs in one hand. RIGHT panel (END position): standing tall with the kettlebell in the rack position at the shoulder, elbow tucked to the ribs, bell resting on the forearm.
+```
+
+### pushpress · Push press
+Archivo: `pushpress.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Kettlebell push press. Equipment: one kettlebell held in one hand. Camera: side view. LEFT panel (START position): kettlebell in the rack position at the shoulder, knees slightly bent in a short dip. RIGHT panel (END position): legs straight and the arm locked overhead, kettlebell resting on the back of the forearm.
+```
+
+### kbdl · Peso muerto con pesa rusa
+Archivo: `kbdl.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Kettlebell deadlift. Equipment: one kettlebell held by the handle with both hands. Camera: side view. LEFT panel (START position): standing tall holding the kettlebell in front of the thighs with straight arms. RIGHT panel (END position): hips pushed back and knees bent, back flat, the kettlebell lowered to the floor between the feet.
+```
+
+### kbsumo · Sentadilla sumo con pesa rusa
+Archivo: `kbsumo.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Kettlebell sumo squat. Equipment: one kettlebell held by the handle with both hands. Camera: front view. LEFT panel (START position): wide stance with toes turned out, kettlebell hanging between the legs with straight arms. RIGHT panel (END position): deep wide squat, thighs parallel to the floor, chest up, kettlebell close to the floor.
+```
+
+### kbrow · Remo a una mano con pesa rusa
+Archivo: `kbrow.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Single-arm kettlebell row. Equipment: one kettlebell held in one hand. Camera: side view. LEFT panel (START position): staggered stance, torso hinged forward, free hand on the front knee, kettlebell hanging straight down. RIGHT panel (END position): elbow pulled back to the hip with the kettlebell at the ribs, back flat.
+```
+
+### kblunge · Zancada con pesa al pecho
+Archivo: `kblunge.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Kettlebell goblet reverse lunge. Equipment: one kettlebell held upside down by the horns at the chest. Camera: side view. LEFT panel (START position): standing tall with the kettlebell held at the chest. RIGHT panel (END position): reverse lunge with the back knee almost touching the floor, torso upright, kettlebell still at the chest.
+```
+
+### latlunge · Zancada lateral con pesa
+Archivo: `latlunge.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Kettlebell lateral lunge. Equipment: one kettlebell held at the chest with both hands. Camera: front view. LEFT panel (START position): standing with feet a bit wider than the hips, kettlebell at the chest. RIGHT panel (END position): big step to the side, bending that knee with the hips back while the other leg stays straight.
+```
+
+### windmill · Molino con pesa rusa
+Archivo: `windmill.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Kettlebell windmill. Equipment: one kettlebell held in one hand. Camera: front view. LEFT panel (START position): standing with the kettlebell locked overhead in one hand, eyes on the kettlebell. RIGHT panel (END position): hips pushed out to the kettlebell side, torso tilted sideways, free hand sliding down to the opposite shin, arm overhead still vertical.
+```
+
+### around · Pase alrededor del cuerpo
+Archivo: `around.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Kettlebell around the world. Equipment: one kettlebell held in one hand. Camera: front view. LEFT panel (START position): standing tall, kettlebell held at the right hip. RIGHT panel (END position): kettlebell passed in front of the body to the other hand at the left hip, hips still.
+```
+
+### suitcase · Marcha con pesa a un lado
+Archivo: `suitcase.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Kettlebell suitcase march. Equipment: one kettlebell held in one hand at the side. Camera: side view. LEFT panel (START position): standing tall, kettlebell hanging at one side, one knee lifted to hip height. RIGHT panel (END position): the other knee lifted to hip height, shoulders level, kettlebell still at the side.
+```
+
+### kbfront · Elevación frontal con pesa
+Archivo: `kbfront.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Kettlebell front raise. Equipment: one kettlebell held by the handle with both hands. Camera: side view. LEFT panel (START position): standing tall, kettlebell hanging in front of the thighs with straight arms. RIGHT panel (END position): arms raised straight forward to shoulder height holding the kettlebell.
+```
+
+### goodmorning · Buenos días con pesa
+Archivo: `goodmorning.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Kettlebell good morning. Equipment: one kettlebell held upside down by the horns at the chest. Camera: side view. LEFT panel (START position): standing tall with the kettlebell held at the chest. RIGHT panel (END position): hips pushed back and torso hinged forward almost parallel to the floor, back flat, knees soft, kettlebell still at the chest.
+```
+
+### kbsl · Peso muerto a una pierna con pesa
+Archivo: `kbsl.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Kettlebell single-leg deadlift. Equipment: one kettlebell held in one hand. Camera: side view. LEFT panel (START position): standing on one leg, kettlebell in the opposite hand. RIGHT panel (END position): torso hinged forward and the free leg extended straight back in a line with the torso, kettlebell lowered toward the floor.
+```
+
 ### dpress · Press de hombros
 Archivo: `dpress.png`
 
@@ -411,4 +509,53 @@ Archivo: `dside.png`
 
 ```text
 Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Dumbbell side bend. Equipment: one dumbbell in the right hand. Camera: front view. LEFT panel (START position): standing tall, dumbbell in the right hand at the side, left hand behind the head. RIGHT panel (END position): torso bent to the right, lowering the dumbbell toward the knee, left elbow pointing up.
+```
+
+### darnold · Press Arnold
+Archivo: `darnold.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Dumbbell Arnold press. Equipment: two dumbbells. Camera: front view. LEFT panel (START position): dumbbells at chin height with palms facing the body and elbows in front. RIGHT panel (END position): arms pressed overhead with the palms rotated to face forward.
+```
+
+### dfront · Elevación frontal con mancuernas
+Archivo: `dfront.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Dumbbell front raise. Equipment: two dumbbells. Camera: side view. LEFT panel (START position): standing tall, dumbbells in front of the thighs. RIGHT panel (END position): straight arms raised forward to shoulder height.
+```
+
+### duprow · Remo al mentón
+Archivo: `duprow.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Dumbbell upright row. Equipment: two dumbbells. Camera: front view. LEFT panel (START position): standing tall, dumbbells in front of the thighs. RIGHT panel (END position): elbows raised out to the sides above the hands, dumbbells pulled up to chest height close to the body.
+```
+
+### dwalk · Zancada caminando
+Archivo: `dwalk.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Dumbbell walking lunge. Equipment: two dumbbells. Camera: side view. LEFT panel (START position): standing tall with a dumbbell in each hand at the sides. RIGHT panel (END position): long step forward into a lunge, back knee almost touching the floor, torso upright.
+```
+
+### dfarmer · Paseo del granjero
+Archivo: `dfarmer.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Dumbbell farmer's march. Equipment: two heavy dumbbells. Camera: side view. LEFT panel (START position): standing tall with a heavy dumbbell in each hand, one knee lifted. RIGHT panel (END position): the other knee lifted, shoulders back, dumbbells still at the sides.
+```
+
+### dkickback · Patada de tríceps
+Archivo: `dkickback.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Dumbbell triceps kickback. Equipment: two dumbbells. Camera: side view. LEFT panel (START position): torso hinged forward, upper arms tight to the body, elbows bent 90 degrees. RIGHT panel (END position): forearms extended straight back, arms in a line with the torso.
+```
+
+### dcurl · Curl de bíceps
+Archivo: `dcurl.png`
+
+```text
+Clean flat vector illustration for a fitness app. Square 1:1 image divided into two equal side-by-side panels by a thin vertical divider line. The same athletic person (short dark hair, fitted navy t-shirt, grey shorts, white sneakers, neutral build) appears in both panels at the same size and position, full body always visible with some margin, standing on a thin floor line. Plain pale blue-grey background (#EDF0F7). Kettlebells are orange (#E9460F), dumbbells are teal (#0A8770). No text, letters, numbers or watermark. Anatomically correct proportions and safe, textbook exercise form. Exercise: Dumbbell biceps curl. Equipment: two dumbbells. Camera: side view. LEFT panel (START position): standing tall, arms straight with the palms facing forward. RIGHT panel (END position): dumbbells curled up to the shoulders, elbows fixed at the sides.
 ```

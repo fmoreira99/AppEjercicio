@@ -102,8 +102,8 @@
     goblet: { view: 'side', prop: KB, tr: 'hip', poses: [o({ a: [10, 200], bd: 0 }, UP), o({ hx: 38, hy: 65, t: 30, a: [30, 200], bd: 0 }, DOWN)] },
     cleanpress: { view: 'side', T: 0.75, hold: 0.12, prop: { k: 'kb', g: 'near' }, poses: [
       { hx: 42, hy: 52, t: 25, a: [2, 2], a2: [40, 40], d: 1.1 },
-      { a: [10, 200], a2: [40, 40], d: 0.7, e: 'out' },
-      { a: [178, 178], a2: [40, 40], d: 0.8, e: 'out' }] },
+      { a: [10, 200], a2: [40, 40], bd: 20, d: 0.7, e: 'out' },
+      { a: [178, 178], a2: [40, 40], bd: -10, d: 0.8, e: 'out' }] },
     woodchop: { view: 'front', T: 0.8, hold: 0.08, prop: KB, poses: [
       { hy: 54, t: -8, f: [62, 38], a: [-15, -30], a2: [-30, -35], d: 1.1 },
       o({ hy: 54, t: 8, f: [62, 38], a: [125, 150], a2: [140, 155] }, UP)] },
@@ -120,7 +120,44 @@
     giro: { view: 'front', loop: 'cycle', T: 0.6, hold: 0.1, prop: KB, poses: [
       { a: [25, 210], f: W, bd: 0 }, { a: [25, 210], f: W, bd: 0, sx: 0.45, ux: -5 },
       { a: [25, 210], f: W, bd: 0 }, { a: [25, 210], f: W, bd: 0, sx: 0.45, ux: 5 }] },
-    pressoh: { view: 'side', T: 0.8, prop: { k: 'kb', g: 'near' }, poses: [o({ a: [10, 200], a2: [40, 40] }, { d: 1.1 }), o({ a: [178, 178], a2: [40, 40] }, UP)] },
+    pressoh: { view: 'side', T: 0.8, prop: { k: 'kb', g: 'near' }, poses: [o({ a: [10, 200], a2: [40, 40], bd: 20 }, { d: 1.1 }), o({ a: [178, 178], a2: [40, 40], bd: -10 }, UP)] },
+    snatch: { view: 'side', T: 0.75, hold: 0.06, prop: { k: 'kb', g: 'near' }, poses: [
+      o({ hx: 36, hy: 54, t: 60, a: [-25, -25], a2: [40, 40], bd: -25 }, { d: 1.1, e: 'in' }),
+      o({ t: -2, a: [100, 150], a2: [40, 40], bd: 60 }, { d: 0.6, e: 'out' }),
+      o({ t: -3, a: [178, 178], a2: [40, 40], bd: -10 }, { d: 0.5, e: 'out' })] },
+    kbclean: { view: 'side', T: 0.75, hold: 0.14, prop: { k: 'kb', g: 'near' }, poses: [
+      o({ hx: 40, hy: 53, t: 40, a: [-5, -5], a2: [40, 40] }, { d: 1.1 }),
+      o({ a: [10, 200], a2: [40, 40], bd: 20 }, { d: 0.7, e: 'out' })] },
+    pushpress: { view: 'side', loop: 'cycle', T: 0.6, hold: 0.1, prop: { k: 'kb', g: 'near' }, poses: [
+      { a: [10, 200], a2: [40, 40], bd: 20, d: 1.2 },
+      { hx: 47, hy: 53.5, t: 2, a: [10, 200], a2: [40, 40], bd: 20, d: 0.7 },
+      o({ a: [178, 178], a2: [40, 40], bd: -10 }, { d: 0.6, e: 'out' })] },
+    kbdl: { view: 'side', prop: KB, tr: 'hip', poses: [o({ a: [3, 3], bd: 0 }, UP), o({ hx: 38, hy: 57, t: 55, a: [0, 0], bd: 0 }, DOWN)] },
+    kbsumo: { view: 'front', prop: KB, tr: 'hip', poses: [o({ f: [70, 30], a: [-10, -10], bd: 0 }, UP), o({ hy: 66, f: [70, 30], a: [-10, -10], bd: 0 }, DOWN)] },
+    kbrow: { view: 'side', prop: { k: 'kb', g: 'near' }, poses: [
+      o({ hx: 42, hy: 54, t: 55, f: [62, 34], a: [0, 0], a2: [70, 20], bd: 0 }, { d: 1.1 }),
+      o({ hx: 42, hy: 54, t: 55, f: [62, 34], a: [-85, 0], a2: [70, 20], bd: 0 }, UP)] },
+    kblunge: { view: 'side', prop: KB, tr: 'hip', poses: [o({ a: [10, 200], bd: 0 }, UP), o({ hx: 47, hy: 64, t: 5, f: [58, 28], fy: [G, 84], a: [10, 200], bd: 0 }, DOWN)] },
+    latlunge: { view: 'front', T: 1.0, prop: KB, tr: 'hip', poses: [
+      o({ f: [60, 40], a: [25, 210], bd: 0 }, UP),
+      o({ hx: 60, hy: 62, tl: 0.85, f: [66, 27], a: [25, 210], bd: 0 }, DOWN)] },
+    windmill: { view: 'front', T: 1.2, hold: 0.25, prop: { k: 'kb', g: 'near' }, poses: [
+      { a: [178, 178], a2: [-8, -8], f: [62, 40], bd: -10 },
+      { hx: 55, t: -45, tl: 0.9, a: [180, 180], a2: [0, 0], f: [62, 40], bd: -10, d: 1.3 }] },
+    around: { view: 'front', T: 0.6, hold: 0.04, prop: KB, poses: [
+      { a: [12, 6], a2: [28, 22], f: W, bd: 0 },
+      { a: [-16, -24], a2: [16, 24], f: W, bd: 0 },
+      { a: [-28, -22], a2: [-12, -6], f: W, bd: 0 }] },
+    suitcase: { view: 'side', T: 0.5, hold: 0, prop: { k: 'kb', g: 'near' }, tr: 'knee', poses: [
+      { f: [60, 50], fy: [70, G], a: [2, 2], a2: [40, 100], bd: 0 },
+      { f: [50, 60], fy: [G, 70], a: [2, 2], a2: [-30, -10], bd: 0 }] },
+    kbfront: { view: 'side', prop: KB, poses: [o({ a: [0, 0], bd: 0 }, DOWN), o({ a: [88, 88], bd: 0 }, UP)] },
+    goodmorning: { view: 'side', T: 1.0, hold: 0.2, prop: KB, tr: 'head', poses: [
+      o({ a: [10, 200], bd: 0 }, UP),
+      o({ hx: 40, hy: 50, t: 65, a: [-55, 135], bd: 0 }, DOWN)] },
+    kbsl: { view: 'side', T: 1.0, hold: 0.2, prop: { k: 'kb', g: 'near' }, poses: [
+      { hx: 62, f: [62, 62], a: [3, 3], a2: [10, 10], bd: 0 },
+      { hx: 56, hy: 56, t: 75, f: [62, 18], fy: [G, 58], a: [0, 0], a2: [-60, -60], bd: 0, d: 1.2 }] },
 
     // Mancuernas
     dpress: { view: 'front', T: 0.8, prop: DB2, poses: [o({ a: [70, 180], f: W }, { d: 1.1 }), o({ a: [172, 178], f: W }, UP)] },
@@ -141,7 +178,25 @@
       o({ hy: 54, t: 8, f: [62, 38], a: [125, 150], a2: [140, 155], bd: 0 }, UP)] },
     dside: { view: 'front', T: 0.9, hold: 0.2, prop: { k: 'db2', g: 'near' }, poses: [
       { a: [0, 0], a2: [-130, -170], f: W },
-      { t: 20, a: [0, 0], a2: [-130, -170], f: W, d: 1.2 }] }
+      { t: 20, a: [0, 0], a2: [-130, -170], f: W, d: 1.2 }] },
+    darnold: { view: 'front', T: 0.8, prop: DB2, poses: [
+      o({ a: [-8, 176], f: W }, { d: 1.1 }),
+      { a: [70, 180], f: W, d: 0.6 },
+      o({ a: [172, 178], f: W }, { d: 0.6, e: 'out' })] },
+    dfront: { view: 'side', prop: DB2, poses: [o({ a: [0, 0] }, DOWN), o({ a: [88, 88] }, UP)] },
+    duprow: { view: 'front', prop: DB2, poses: [o({ a: [-6, -6], f: W }, DOWN), o({ a: [78, -115], f: W }, UP)] },
+    dwalk: { view: 'side', loop: 'cycle', T: 0.75, hold: 0.08, prop: DB2, tr: 'hip', poses: [
+      { a: [3, 3] },
+      o({ hx: 46, hy: 64, t: 4, f: [60, 26], fy: [G, 84], a: [2, 2] }, DOWN),
+      o({ a: [3, 3] }, UP),
+      o({ hx: 46, hy: 64, t: 4, f: [26, 60], fy: [84, G], a: [2, 2] }, DOWN)] },
+    dfarmer: { view: 'side', T: 0.45, hold: 0, prop: DB2, tr: 'knee', poses: [
+      { f: [58, 50], fy: [74, G], a: [2, 2] },
+      { f: [50, 58], fy: [G, 74], a: [2, 2] }] },
+    dkickback: { view: 'side', prop: DB2, poses: [
+      o({ hx: 40, hy: 52, t: 55, a: [-70, 0] }, DOWN),
+      o({ hx: 40, hy: 52, t: 55, a: [-70, -75] }, UP)] },
+    dcurl: { view: 'side', prop: DB2, poses: [o({ a: [0, 0] }, DOWN), o({ a: [5, 165] }, UP)] }
   };
 
   /* ---------- Poses ---------- */

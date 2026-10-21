@@ -10,7 +10,7 @@
     mob: { label: 'Movilidad', icon: 'stretch' }
   };
 
-  const GOALS = { volumen: 'Volumen', cardio: 'Cardio', fuerza: 'Fuerza', mov: 'Movilidad' };
+  const GOALS = { volumen: 'Volumen', cardio: 'Cardio', fuerza: 'Fuerza', core: 'Abdomen', mov: 'Movilidad' };
 
   /*
     n: nombre · m: músculos · c: indicación · swap: cambiar de lado a mitad de tiempo
@@ -65,6 +65,20 @@
     ocho: { n: 'Ocho entre las piernas', m: ['Core', 'Glúteos', 'Cardio'], c: 'Piernas abiertas, pasa la pesa en forma de ocho alrededor de las piernas.' },
     giro: { n: 'Giro de torso con pesa', m: ['Oblicuos', 'Core'], c: 'Pesa al pecho y gira el torso a cada lado con la cadera firme.' },
     pressoh: { n: 'Press de hombro con pesa', m: ['Hombros', 'Tríceps'], c: 'Empuja recto hacia arriba con las costillas abajo. Cambia de brazo a la mitad.', swap: true },
+    snatch: { n: 'Arranque (snatch)', m: ['Cuerpo completo', 'Hombros', 'Cardio'], c: 'Swing a una mano que termina con la pesa arriba y el brazo estirado. Mete la mano por dentro al final para que la pesa no golpee el antebrazo. Cambia de mano a la mitad.', swap: true },
+    kbclean: { n: 'Clean con pesa rusa', m: ['Cadera', 'Brazos', 'Core'], c: 'Desde la bisagra, tira con la cadera y lleva la pesa al hombro con el codo pegado; recíbela suave sobre el antebrazo. Cambia de brazo a la mitad.', swap: true },
+    pushpress: { n: 'Push press', m: ['Hombros', 'Piernas', 'Tríceps'], c: 'Pesa al hombro, flexiona un poco las rodillas y empuja con piernas y brazo a la vez hasta bloquear arriba. Cambia de brazo a la mitad.', swap: true },
+    kbdl: { n: 'Peso muerto con pesa rusa', m: ['Glúteos', 'Isquios', 'Espalda baja'], c: 'Pesa entre los pies, cadera atrás y espalda recta; sube empujando el suelo y aprieta los glúteos arriba.' },
+    kbsumo: { n: 'Sentadilla sumo con pesa rusa', m: ['Piernas', 'Glúteos', 'Aductores'], c: 'Pies anchos con las puntas afuera y la pesa colgando entre las piernas; baja con el pecho arriba.' },
+    kbrow: { n: 'Remo a una mano con pesa rusa', m: ['Espalda', 'Bíceps'], c: 'Un pie adelante y la mano libre en la rodilla; lleva el codo hacia la cadera sin girar el torso. Cambia de brazo a la mitad.', swap: true },
+    kblunge: { n: 'Zancada con pesa al pecho', m: ['Piernas', 'Glúteos', 'Core'], c: 'Pesa pegada al pecho, paso largo hacia atrás y rodilla casi al suelo. Alterna las piernas.' },
+    latlunge: { n: 'Zancada lateral con pesa', m: ['Piernas', 'Glúteos', 'Aductores'], c: 'Paso al costado y baja sobre esa pierna con la otra estirada; vuelve al centro. Cambia de lado a la mitad.', swap: true },
+    windmill: { n: 'Molino con pesa rusa', m: ['Oblicuos', 'Hombros', 'Cadera'], c: 'Pesa arriba con el brazo bloqueado y la mirada en ella; empuja la cadera hacia el lado y baja la otra mano por la pierna. Cambia de lado a la mitad.', swap: true },
+    around: { n: 'Pase alrededor del cuerpo', m: ['Core', 'Hombros'], c: 'Pasa la pesa de una mano a la otra alrededor de la cintura sin mover la cadera. Cambia de sentido a la mitad.', swap: true },
+    suitcase: { n: 'Marcha con pesa a un lado', m: ['Core', 'Oblicuos', 'Agarre'], c: 'Pesa colgando a un lado y hombros nivelados; marcha sin inclinarte. Cambia de mano a la mitad.', swap: true },
+    kbfront: { n: 'Elevación frontal con pesa', m: ['Hombros'], c: 'Brazos casi rectos, sube la pesa hasta la altura de los hombros y baja lento.' },
+    goodmorning: { n: 'Buenos días con pesa', m: ['Isquios', 'Glúteos', 'Espalda baja'], c: 'Pesa al pecho y rodillas suaves; inclina el torso llevando la cadera atrás con la espalda recta.' },
+    kbsl: { n: 'Peso muerto a una pierna con pesa', m: ['Glúteos', 'Isquios', 'Equilibrio'], c: 'Pesa en la mano contraria a la pierna de apoyo; cadera atrás y pierna libre estirada. Cambia de lado a la mitad.', swap: true },
 
     // Mancuernas
     dpress: { n: 'Press de hombros', m: ['Hombros', 'Tríceps'], c: 'Mancuernas a la altura de las orejas y empuja arriba sin arquear la espalda.' },
@@ -81,8 +95,29 @@
     dcalf: { n: 'Elevación de talones', m: ['Pantorrillas'], c: 'Sube lento a puntas de pie y haz una pausa arriba.' },
     dthr: { n: 'Thruster con mancuernas', m: ['Piernas', 'Hombros', 'Cardio'], c: 'Sentadilla con las mancuernas a los hombros y empuje arriba al subir.' },
     dchop: { n: 'Leñador con mancuerna', m: ['Oblicuos', 'Core'], c: 'Diagonal de la cadera al hombro opuesto, girando pies y torso.' },
-    dside: { n: 'Inclinación con mancuerna', m: ['Oblicuos'], c: 'Mancuerna en una mano, inclínate al costado sin girar y sube con el abdomen.' }
+    dside: { n: 'Inclinación con mancuerna', m: ['Oblicuos'], c: 'Mancuerna en una mano, inclínate al costado sin girar y sube con el abdomen.' },
+    darnold: { n: 'Press Arnold', m: ['Hombros', 'Tríceps'], c: 'Empieza con las palmas hacia ti a la altura del mentón y gíralas hacia adelante mientras empujas arriba.' },
+    dfront: { n: 'Elevación frontal con mancuernas', m: ['Hombros'], c: 'Brazos casi rectos, sube al frente hasta la altura de los hombros y baja lento.' },
+    duprow: { n: 'Remo al mentón', m: ['Hombros', 'Trapecio'], c: 'Mancuernas pegadas al cuerpo; sube los codos hacia los lados hasta la altura del pecho.' },
+    dwalk: { n: 'Zancada caminando', m: ['Piernas', 'Glúteos'], c: 'Paso largo hacia adelante bajando la rodilla de atrás; alterna avanzando con el torso erguido.' },
+    dfarmer: { n: 'Paseo del granjero', m: ['Agarre', 'Core', 'Trapecio'], c: 'Mancuernas pesadas a los lados y hombros atrás; marcha o camina con pasos cortos.' },
+    dkickback: { n: 'Patada de tríceps', m: ['Tríceps'], c: 'Torso inclinado y codos pegados atrás; estira el antebrazo hacia atrás y aprieta.' },
+    dcurl: { n: 'Curl de bíceps', m: ['Bíceps'], c: 'Palmas hacia arriba y codos fijos al costado; sube controlado y baja lento.' }
   };
+
+  // Grupos de la biblioteca de ejercicios.
+  const EXGROUPS = [
+    { id: 'kb', label: 'Pesa rusa', cat: 'kb' },
+    { id: 'db', label: 'Mancuernas', cat: 'db' },
+    { id: 'bw', label: 'Peso corporal', cat: 'mix' },
+    { id: 'mob', label: 'Movilidad', cat: 'mob' }
+  ];
+  const KB_IDS = ['halo', 'swing', 'swing1', 'goblet', 'cleanpress', 'woodchop', 'thruster', 'highpull', 'curl', 'triext', 'marchapesa', 'ocho', 'giro', 'pressoh',
+    'snatch', 'kbclean', 'pushpress', 'kbdl', 'kbsumo', 'kbrow', 'kblunge', 'latlunge', 'windmill', 'around', 'suitcase', 'kbfront', 'goodmorning', 'kbsl'];
+  const MOB_IDS = ['brazos', 'cadera', 'torso', 'bisagra', 'quad', 'isquios', 'pecho', 'triest', 'lateral'];
+  Object.keys(EX).forEach((id) => {
+    EX[id].g = KB_IDS.includes(id) ? 'kb' : MOB_IDS.includes(id) ? 'mob' : id.charAt(0) === 'd' && id !== 'deepsq' ? 'db' : 'bw';
+  });
 
   /*
     Ítem: i('id')                              por tiempo (usa work de la sección)
@@ -201,22 +236,86 @@
     },
     {
       id: 'kb-full', cat: 'kb', goal: 'cardio', name: 'Cuerpo completo',
-      tagline: 'Quema de grasa, cardio, abdomen y brazos con una sola pesa rusa.',
+      tagline: 'Full body completo con una pesa rusa: piernas, empuje, tirón, cardio, brazos y abdomen.',
       focus: ['Quema grasa', 'Cardio', 'Abdomen', 'Brazos'],
       sections: [
         { title: 'Calentamiento', rounds: 1, work: 30, rest: 10, items: [i('brazos'), i('halo'), i('bisagra'), i('aire')] },
-        { title: 'Potencia', rounds: 4, work: 40, rest: 20, roundRest: 60, items: [i('swing'), i('goblet'), i('cleanpress'), i('woodchop'), i('thruster'), i('marchapesa')] },
-        { title: 'Brazos y abdomen', rounds: 2, work: 30, rest: 15, roundRest: 30, items: [i('curl'), i('triext'), i('giro')] }
+        { title: 'Piernas y cadera', rounds: 3, work: 40, rest: 20, roundRest: 60, items: [i('swing'), i('goblet'), i('kblunge'), i('kbdl')] },
+        { title: 'Empuje y tirón', rounds: 3, work: 40, rest: 20, roundRest: 60, items: [i('cleanpress'), i('kbrow'), i('pushpress'), i('highpull')] },
+        { title: 'Cardio final', rounds: 3, work: 30, rest: 15, roundRest: 45, items: [i('snatch'), i('thruster'), i('marchapesa')] },
+        { title: 'Brazos y abdomen', rounds: 2, work: 30, rest: 15, roundRest: 30, items: [i('curl'), i('triext'), i('woodchop'), i('windmill')] }
       ]
     },
     {
-      id: 'kb-abs-arms', cat: 'kb', goal: 'cardio', name: 'Abdomen y brazos',
+      id: 'kb-abs-arms', cat: 'kb', goal: 'core', name: 'Abdomen y brazos',
       tagline: 'Core de pie, brazos y hombros, con swings para mantener el pulso alto.',
       focus: ['Abdomen', 'Brazos', 'Cardio'],
       sections: [
         { title: 'Calentamiento', rounds: 1, work: 30, rest: 10, items: [i('brazos'), i('torso'), i('halo'), i('bisagra')] },
         { title: 'Circuito', rounds: 4, work: 40, rest: 20, roundRest: 45, items: [i('swing1'), i('ocho'), i('pressoh'), i('giro'), i('curl'), i('woodchop')] },
         { title: 'Final', rounds: 2, work: 30, rest: 10, roundRest: 30, items: [i('highpull'), i('marchapesa')] }
+      ]
+    },
+
+    {
+      id: 'kb-hiit', cat: 'kb', goal: 'cardio', name: 'Quema grasa HIIT',
+      tagline: 'Intervalos de 40/20 con la pesa rusa y un Tabata final de swings.',
+      focus: ['Quema grasa', 'Cardio', 'Cuerpo completo'],
+      sections: [
+        { title: 'Calentamiento', rounds: 1, work: 30, rest: 10, items: [i('brazos'), i('halo'), i('bisagra'), i('aire')] },
+        { title: 'Circuito', rounds: 4, work: 40, rest: 20, roundRest: 60, items: [i('swing'), i('thruster'), i('snatch'), i('highpull'), i('kblunge')] },
+        { title: 'Tabata de swings', rounds: 8, work: 20, roundRest: 10, items: [i('swing')] }
+      ]
+    },
+    {
+      id: 'kb-complex', cat: 'kb', goal: 'fuerza', name: 'Complejo full body',
+      tagline: 'Cinco movimientos seguidos sin soltar la pesa, en 5 rondas.',
+      focus: ['Fuerza', 'Cuerpo completo', 'Resistencia'],
+      sections: [
+        { title: 'Calentamiento', rounds: 1, work: 30, rest: 10, items: [i('brazos'), i('halo'), i('goodmorning'), i('aire')] },
+        { title: 'Complejo', rounds: 5, rest: 0, roundRest: 90, items: [reps('kbclean', 5, 'por lado'), reps('pushpress', 5, 'por lado'), reps('goblet', 8), reps('kblunge', 5, 'por lado'), reps('swing', 10)] },
+        { title: 'Core de pie', rounds: 2, work: 30, rest: 10, roundRest: 30, items: [i('around'), i('suitcase')] }
+      ]
+    },
+    {
+      id: 'kb-legs', cat: 'kb', goal: 'volumen', name: 'Piernas y glúteos',
+      tagline: 'Sentadillas, peso muerto y zancadas con la pesa rusa.',
+      focus: ['Volumen', 'Piernas', 'Glúteos'],
+      sections: [
+        { title: 'Calentamiento', rounds: 1, work: 30, rest: 10, items: [i('cadera'), i('aire'), i('bisagra'), i('marcha')] },
+        { title: 'Bloque 1', rounds: 4, rest: 30, roundRest: 75, items: [reps('goblet', 12), reps('kbdl', 12)] },
+        { title: 'Bloque 2', rounds: 3, rest: 30, roundRest: 75, items: [reps('kblunge', 10, 'por lado'), reps('latlunge', 8, 'por lado')] },
+        { title: 'Bloque 3', rounds: 3, rest: 30, roundRest: 60, items: [reps('kbsl', 8, 'por lado'), reps('kbsumo', 15)] },
+        { title: 'Final', rounds: 3, work: 30, roundRest: 30, items: [i('swing')] }
+      ]
+    },
+    {
+      id: 'kb-upper', cat: 'kb', goal: 'volumen', name: 'Hombros, espalda y brazos',
+      tagline: 'Empuje, tirón y brazos con una pesa rusa.',
+      focus: ['Volumen', 'Hombros', 'Brazos'],
+      sections: [
+        { title: 'Calentamiento', rounds: 1, work: 30, rest: 10, items: [i('brazos'), i('halo'), i('torso')] },
+        { title: 'Bloque 1', rounds: 4, rest: 30, roundRest: 75, items: [reps('pressoh', 8, 'por lado'), reps('kbrow', 10, 'por lado')] },
+        { title: 'Bloque 2', rounds: 3, rest: 30, roundRest: 75, items: [reps('pushpress', 8, 'por lado'), reps('highpull', 12)] },
+        { title: 'Bloque 3', rounds: 3, rest: 20, roundRest: 60, items: [reps('curl', 12), reps('triext', 12), reps('kbfront', 10)] }
+      ]
+    },
+    {
+      id: 'kb-core', cat: 'kb', goal: 'core', name: 'Abdomen de pie',
+      tagline: 'Oblicuos y core sin tirarte al suelo: molinos, giros y leñadores.',
+      focus: ['Abdomen', 'Oblicuos', 'Core'],
+      sections: [
+        { title: 'Calentamiento', rounds: 1, work: 30, rest: 10, items: [i('torso'), i('cadera'), i('halo')] },
+        { title: 'Circuito', rounds: 3, work: 40, rest: 15, roundRest: 45, items: [i('windmill'), i('around'), i('woodchop'), i('suitcase'), i('giro'), i('ocho')] }
+      ]
+    },
+    {
+      id: 'kb-express', cat: 'kb', goal: 'cardio', name: 'Express 15 minutos',
+      tagline: 'Para días con poco tiempo: cuatro ejercicios, tres rondas.',
+      focus: ['Cardio', 'Cuerpo completo'],
+      sections: [
+        { title: 'Activación', rounds: 1, work: 30, rest: 10, items: [i('halo'), i('aire')] },
+        { title: 'Circuito', rounds: 3, work: 40, rest: 20, roundRest: 40, items: [i('swing'), i('goblet'), i('pushpress'), i('highpull')] }
       ]
     },
 
@@ -230,6 +329,27 @@
         { title: 'Bloque 1', rounds: 4, rest: 30, roundRest: 90, items: [reps('dgoblet', 12), reps('dpress', 10), reps('drdl', 12)] },
         { title: 'Bloque 2', rounds: 3, rest: 30, roundRest: 90, items: [reps('dremo', 12), reps('drev', 10, 'por lado'), reps('dlat', 12)] },
         { title: 'Bloque 3', rounds: 3, rest: 30, roundRest: 75, items: [reps('dhammer', 12), reps('dtri', 12), reps('dthr', 10)] }
+      ]
+    },
+    {
+      id: 'db-arms', cat: 'db', goal: 'volumen', name: 'Brazos y hombros',
+      tagline: 'Bíceps, tríceps y hombros con dos mancuernas.',
+      focus: ['Volumen', 'Brazos', 'Hombros'],
+      sections: [
+        { title: 'Calentamiento', rounds: 1, work: 30, rest: 5, items: [i('brazos'), i('torso')] },
+        { title: 'Bloque 1', rounds: 3, rest: 30, roundRest: 60, items: [reps('darnold', 10), reps('dlat', 12)] },
+        { title: 'Bloque 2', rounds: 3, rest: 30, roundRest: 60, items: [reps('dcurl', 12), reps('dkickback', 12)] },
+        { title: 'Bloque 3', rounds: 3, rest: 30, roundRest: 60, items: [reps('dhammer', 10), reps('duprow', 12), reps('dfront', 10)] }
+      ]
+    },
+    {
+      id: 'db-hiit', cat: 'db', goal: 'cardio', name: 'Quema grasa con mancuernas',
+      tagline: 'Circuito de 40/20 con mancuernas ligeras.',
+      focus: ['Quema grasa', 'Cardio', 'Cuerpo completo'],
+      sections: [
+        { title: 'Calentamiento', rounds: 1, work: 30, rest: 10, items: [i('brazos'), i('marcha'), i('aire')] },
+        { title: 'Circuito', rounds: 4, work: 40, rest: 20, roundRest: 60, items: [i('dthr'), i('dwalk'), i('dremo'), i('boxeo'), i('dfarmer')] },
+        { title: 'Final', rounds: 2, work: 30, rest: 15, roundRest: 30, items: [i('dchop'), i('dside')] }
       ]
     },
     {
@@ -310,5 +430,5 @@
   // Extensión de las imágenes de referencia en img/ejercicios/<id>.<ext> (png, jpg o webp).
   const IMG_EXT = 'png';
 
-  window.FORJA = { CATS, GOALS, EX, ROUTINES, PROGRAM, PROGRAM_NAMES, DEFAULT_PLAN, IMG_EXT };
+  window.FORJA = { CATS, GOALS, EX, EXGROUPS, ROUTINES, PROGRAM, PROGRAM_NAMES, DEFAULT_PLAN, IMG_EXT };
 })();
