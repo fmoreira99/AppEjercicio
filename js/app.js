@@ -35,19 +35,20 @@
   const KEY = 'forja.v1';
   const OLD_PLAN = ['pdf', 'kb-full', 'pdf', 'db-upper', 'pdf', 'kb-abs-arms', 'rest'];
   const defaults = () => ({ plan: [...DEFAULT_PLAN], over: {}, hist: [], beep: true, voice: true, week: 1, done: {}, skip: {}, sskip: {}, moved: {} });
+  function normalize(j) {
+    const s = j ? Object.assign(defaults(), j) : defaults();
+    if (!Array.isArray(s.plan) || s.plan.length !== 7) s.plan = [...DEFAULT_PLAN];
+    // Migración: la rutina "pdf" de ejemplo ahora es el programa del PDF.
+    if (s.plan.join() === OLD_PLAN.join()) s.plan = [...DEFAULT_PLAN];
+    s.plan = s.plan.map((id) => (id === 'pdf' ? 'prog' : id));
+    if (!Array.isArray(s.hist)) s.hist = [];
+    ['over', 'done', 'skip', 'sskip', 'moved'].forEach((k) => { if (!s[k] || typeof s[k] !== 'object') s[k] = {}; });
+    Object.keys(s.over).forEach((k) => { if (s.over[k] === 'pdf') s.over[k] = 'prog'; });
+    if (!(s.week >= 1 && s.week <= PROGRAM.length)) s.week = 1;
+    return s;
+  }
   function load() {
-    try {
-      const j = JSON.parse(localStorage.getItem(KEY));
-      const s = j ? Object.assign(defaults(), j) : defaults();
-      if (!Array.isArray(s.plan) || s.plan.length !== 7) s.plan = [...DEFAULT_PLAN];
-      // Migración: la rutina "pdf" de ejemplo ahora es el programa del PDF.
-      if (s.plan.join() === OLD_PLAN.join()) s.plan = [...DEFAULT_PLAN];
-      s.plan = s.plan.map((id) => (id === 'pdf' ? 'prog' : id));
-      Object.keys(s.over).forEach((k) => { if (s.over[k] === 'pdf') s.over[k] = 'prog'; });
-      if (!(s.week >= 1 && s.week <= PROGRAM.length)) s.week = 1;
-      ['done', 'skip', 'sskip', 'moved'].forEach((k) => { if (!s[k] || typeof s[k] !== 'object') s[k] = {}; });
-      return s;
-    } catch (e) { return defaults(); }
+    try { return normalize(JSON.parse(localStorage.getItem(KEY))); } catch (e) { return defaults(); }
   }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* sin almacenamiento */ } }
   const S = load();
@@ -930,6 +931,12 @@
         </div>
       </section>
       <section class="grp"><h2 class="h-sec">Últimas sesiones</h2><ul class="hist">${list}</ul></section>
+      <section class="grp">
+        <h2 class="h-sec">Copia de seguridad</h2>
+        <p class="muted">Tus datos viven solo en este dispositivo. Guarda una copia para no perderlos o pasarlos a otro teléfono.</p>
+        <div class="row"><button class="btn-ghost" data-act="backup">${ic('down')} Guardar copia</button><button class="btn-ghost" data-act="restore">${ic('up')} Restaurar</button></div>
+        <input type="file" id="restore-file" accept="application/json,.json" hidden>
+      </section>
       ${S.hist.length ? `<section class="grp">${ui.confirmReset
         ? `<p class="muted">Se borrará todo el historial y el avance del programa en este dispositivo.</p><div class="row"><button class="btn-ghost" data-act="reset-cancel">Cancelar</button><button class="btn-danger" data-act="reset-ok">Borrar todo</button></div>`
         : `<button class="btn-ghost block" data-act="reset">Borrar historial</button>`}</section>` : ''}`;
@@ -977,6 +984,37 @@
     };
     show();
     if (list.length > 1) rotor = setInterval(show, 3600);
+  }
+
+  /* ---------- Copia de seguridad ---------- */
+  function exportData() {
+    const blob = new Blob([JSON.stringify({ app: 'forja', v: 1, data: S }, null, 1)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `forja-copia-${today()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast('Copia guardada');
+  }
+  async function importData(file) {
+    if (!file) return;
+    try {
+      const j = JSON.parse(await file.text());
+      const d = j && j.app === 'forja' ? j.data : j;
+      const ok = d && Array.isArray(d.plan) && d.plan.length === 7 && Array.isArray(d.hist) && d.hist.every((h) => h && typeof h.d === 'string' && typeof h.m === 'number');
+      if (!ok) throw new Error('formato');
+      const prev = JSON.parse(JSON.stringify(S));
+      const put = (obj) => { Object.keys(S).forEach((k) => delete S[k]); Object.assign(S, obj); save(); };
+      put(normalize(d));
+      ui.day = today();
+      render();
+      toast('Copia restaurada', () => { put(prev); render(); });
+    } catch (e) {
+      toast('Ese archivo no es una copia de Forja');
+    }
   }
 
   /* ---------- Hojas (sheets) y aviso ---------- */
@@ -1396,6 +1434,8 @@
     'day-today'() { if (dayDeck) dayDeck.jump(0); },
     'ex-go'(b) { if (exDeck) exDeck.go(Number(b.dataset.d)); },
     'dv-close'() { closeDeck(); },
+    backup() { exportData(); },
+    restore() { const f = $('#restore-file'); if (f) f.click(); },
     unskip(b) { clearSkip(b.dataset.day); render(); },
     shift(b) {
       const ds = b.dataset.day;
@@ -1488,6 +1528,7 @@
   });
 
   document.addEventListener('change', (e) => {
+    if (e.target.id === 'restore-file') { importData(e.target.files && e.target.files[0]); e.target.value = ''; return; }
     const sel = e.target.closest('[data-plan]');
     if (!sel) return;
     S.plan[Number(sel.dataset.plan)] = sel.value;
@@ -1519,6 +1560,8 @@
 
   /* ---------- Inicio ---------- */
   render();
+  // Pide al navegador que no borre los datos cuando falte espacio.
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) { /* sin permiso */ }
   if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
     window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
   }

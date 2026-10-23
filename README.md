@@ -2,12 +2,30 @@
 
 App personal de ejercicio: plan semanal, rutinas con temporizador guiado (sonido y voz), y registro de progreso. Cada ejercicio tiene una figura animada de referencia (postura inicial y final).
 
-## Usar
+## Instalar en el celular (gratis)
 
-- Abre `index.html` en el navegador, o sírvela con `npx serve`.
-- En el celular: súbela a GitHub Pages (Settings → Pages → rama `main`) y usa "Agregar a pantalla de inicio". Funciona sin conexión.
-- Los datos (plan e historial) se guardan solo en el dispositivo.
-- Formato vertical 9:16: en el celular ocupa toda la pantalla y en el computador o la tablet se ve dentro de un marco de teléfono.
+Es una app web instalable (PWA): no hay base de datos ni servidor. Todo se guarda en el navegador del teléfono y funciona sin conexión después de abrirla una vez.
+
+**1. Publicarla con GitHub Pages**
+
+1. En el repo: *Settings → Pages → Build and deployment*.
+2. *Source*: **Deploy from a branch**. *Branch*: `claude/eager-curie-5yq85p` (la rama por defecto) y carpeta `/ (root)`. *Save*.
+3. En ~1 minuto queda en `https://fmoreira99.github.io/AppEjercicio/` (la dirección exacta aparece arriba en esa pantalla).
+
+GitHub Pages gratis solo sirve repos **públicos** (en uno privado hace falta un plan de pago). Si el repo es privado: o lo haces público (*Settings → General → Danger Zone → Change visibility*; no tiene datos personales, tus datos quedan en el teléfono) o usas Cloudflare Pages o Netlify, que también son gratis y aceptan repos privados (conectas el repo, sin comando de build, carpeta de salida `/`).
+
+**2. Instalarla**
+
+- **Android (Chrome):** abre la dirección → menú ⋮ → **Instalar app**.
+- **iPhone (Safari):** abre la dirección → botón Compartir → **Agregar a pantalla de inicio**.
+
+Queda con su ícono y se abre a pantalla completa.
+
+**Actualizaciones:** cuando se suban cambios, abre la app dos veces (la primera baja la versión nueva, la segunda ya la muestra).
+
+**Tus datos** viven solo en ese teléfono: si borras los datos del navegador se pierden. En **Progreso → Copia de seguridad** puedes guardar un archivo y restaurarlo (también sirve para pasar tus datos a otro teléfono).
+
+Para usarla en el computador, abre `index.html` o sírvela con `npx serve`. En pantallas anchas se ve dentro de un marco vertical 9:16.
 
 ### Una sola tarjeta
 
