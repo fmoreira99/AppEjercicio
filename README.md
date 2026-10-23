@@ -16,12 +16,14 @@ App personal de ejercicio: plan semanal, rutinas con temporizador guiado (sonido
 | Gesto | Qué hace |
 |---|---|
 | ← → | Cambia de día |
-| ↓ | La hiciste (solo hoy o días pasados) |
-| ↑ | Omitir |
+| ↑ | La hiciste (solo hoy o días pasados) |
+| ↓ | Omitir |
 
 En la tarjeta: **Iniciar** abre el temporizador y **Recorrer** pasa la rutina al día siguiente (las demás se corren hasta el próximo descanso). Tocar la tarjeta muestra los ejercicios como mazo. Todo se puede deshacer.
 
 El botón flotante de la esquina abre Hoy, Rutinas, Programa y Progreso.
+
+En el temporizador, desliza a la izquierda para pasar al siguiente ejercicio y a la derecha para volver al anterior (las flechas tenues a los lados también sirven). El botón del parlante silencia pitidos y voz; el de la burbuja apaga solo la voz.
 
 ## Programa del PDF
 

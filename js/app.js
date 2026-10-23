@@ -272,7 +272,7 @@
   const isShort = (r) => !!r && r.src === 'pdf' && minutesOf(r) < 25;
 
   /* ---------- Hoy: una sola tarjeta grande por día ---------- */
-  // ← → cambia de día · ↓ la hice · ↑ omitir · "Recorrer" pasa la rutina al día siguiente.
+  // ← → cambia de día · ↑ la hice · ↓ omitir · "Recorrer" pasa la rutina al día siguiente.
   const DAY_RANGE = 60;
   const dayAt = (i) => dstr(addDays(parse(today()), i));
   const dayIndex = (ds) => Math.round((parse(ds) - parse(today())) / 864e5);
@@ -314,7 +314,7 @@
   function canVert(ds, dir) {
     const { r, done, skipped } = dayInfo(ds);
     if (!r || done || skipped) return false;
-    return dir === 'up' || ds <= today();
+    return dir === 'down' || ds <= today();
   }
 
   function dayCard(i, top) {
@@ -366,8 +366,8 @@
       if (moved) acts.push(`<button class="dc-b" data-act="unshift" data-day="${ds}">${ic('undo')} Deshacer</button>`);
       acts.push(`<button class="dc-go" data-act="start" data-id="mov">${ic('stretch')} Movilidad</button>`);
     }
-    const gest = canVert(ds, 'down') ? `<p class="dc-gest">${ic('down')} Desliza abajo si la hiciste · ${ic('up')} arriba para omitir</p>`
-      : canVert(ds, 'up') ? `<p class="dc-gest">${ic('up')} Desliza arriba para omitir</p>` : '';
+    const gest = canVert(ds, 'up') ? `<p class="dc-gest">${ic('up')} Desliza arriba si la hiciste · ${ic('down')} abajo para omitir</p>`
+      : canVert(ds, 'down') ? `<p class="dc-gest">${ic('down')} Desliza abajo para omitir</p>` : '';
 
     return `<article class="dk-card day-card cat-${cat} ${rest ? 'is-rest' : ''}" data-act="open-day" data-day="${ds}">
       <div class="dc-stage">
@@ -392,7 +392,7 @@
   }
 
   function viewHoy() {
-    return `<h1 class="sr-only">Hoy</h1><div class="deck days v" id="day-deck" aria-label="Días: desliza a los lados para cambiar de día, abajo si la hiciste y arriba para omitir"></div>`;
+    return `<h1 class="sr-only">Hoy</h1><div class="deck days v" id="day-deck" aria-label="Días: desliza a los lados para cambiar de día, arriba si la hiciste y abajo para omitir"></div>`;
   }
 
   // Marca un día como hecho o lo omite. Devuelve cómo deshacerlo.
@@ -466,12 +466,12 @@
       canVert: (k, dir) => canVert(dayAt(k), dir),
       onVert: (k, dir) => {
         const ds = dayAt(k);
-        const undo = dir === 'down' ? markDone(ds) : omitDay(ds);
-        toast(dir === 'down' ? '¡Hecha!' : 'Omitida', () => { undo(); ui.day = ds; render(); });
+        const undo = dir === 'up' ? markDone(ds) : omitDay(ds);
+        toast(dir === 'up' ? '¡Hecha!' : 'Omitida', () => { undo(); ui.day = ds; render(); });
       },
       onDenied: (k, dir) => {
         const { r, done, skipped } = dayInfo(dayAt(k));
-        toast(!r ? 'Es día de descanso' : done ? 'Ya está hecha' : skipped ? 'Ya está omitida' : dir === 'down' ? 'Ese día todavía no llega' : 'No se puede');
+        toast(!r ? 'Es día de descanso' : done ? 'Ya está hecha' : skipped ? 'Ya está omitida' : dir === 'up' ? 'Ese día todavía no llega' : 'No se puede');
       }
     });
     if (first) root.classList.add('nudge');
@@ -483,7 +483,7 @@
     const st = { i: o.i, drag: null, busy: false, swallow: false };
     const slot = (pos) => root.querySelector(`:scope > .dk-slot.is-${pos}`);
     const reducedMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const vstamps = o.canVert ? '<span class="dk-v is-down">Hecha</span><span class="dk-v is-up">Omitir</span>' : '';
+    const vstamps = o.canVert ? '<span class="dk-v is-up">Hecha</span><span class="dk-v is-down">Omitir</span>' : '';
 
     function paint() {
       const html = (k, pos) => {
@@ -1055,7 +1055,7 @@
     o.stop(t + dur + 0.03);
   }
   function say(text) {
-    if (!S.voice || !('speechSynthesis' in window)) return;
+    if (!S.beep || !S.voice || !('speechSynthesis' in window)) return;
     try {
       speechSynthesis.cancel();
       const u = new SpeechSynthesisUtterance(text);
@@ -1064,6 +1064,7 @@
       speechSynthesis.speak(u);
     } catch (e) { /* sin voz */ }
   }
+  const cancelVoice = () => { try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) { /* sin voz */ } };
   const buzz = (ms) => { try { navigator.vibrate && navigator.vibrate(ms); } catch (e) { /* sin vibración */ } };
   let wake = null;
   async function lockWake() { try { if ('wakeLock' in navigator) wake = await navigator.wakeLock.request('screen'); } catch (e) { wake = null; } }
@@ -1081,8 +1082,8 @@
           <button class="pl-ib" data-act="pl-exit" aria-label="Salir de la rutina">${ic('close')}</button>
           <div class="pl-title"><b>${r.name}</b><span id="pl-sec"></span></div>
           <div class="pl-tg">
-            <button class="pl-ib ${S.beep ? '' : 'is-off'}" id="pl-beep" data-act="pl-beep" aria-pressed="${S.beep}" aria-label="Sonido">${ic(S.beep ? 'sound' : 'mute')}</button>
-            <button class="pl-ib ${S.voice ? '' : 'is-off'}" id="pl-voice" data-act="pl-voice" aria-pressed="${S.voice}" aria-label="Voz">${ic('voice')}</button>
+            <button class="pl-ib ${S.beep ? '' : 'is-off'}" id="pl-beep" data-act="pl-beep" aria-pressed="${S.beep}" aria-label="Sonido y voz">${ic(S.beep ? 'sound' : 'mute')}</button>
+            <button class="pl-ib ${S.beep && S.voice ? '' : 'is-off'}" id="pl-voice" data-act="pl-voice" aria-pressed="${S.voice}" aria-label="Voz">${ic('voice')}</button>
           </div>
         </header>
         <div class="pl-bar" role="progressbar" aria-label="Progreso de la rutina"><i id="pl-fill"></i></div>
@@ -1105,12 +1106,12 @@
           <button class="pl-plus" id="pl-plus" data-act="pl-plus">+15 s de descanso</button>
         </div>
         <footer class="pl-ctrl">
-          <button class="pl-rb" data-act="pl-prev" aria-label="Anterior">${ic('prev')}</button>
           <button class="pl-main" id="pl-pause" data-act="pl-pause" aria-label="Pausar">${ic('pause')}</button>
           <button class="pl-done" id="pl-done" data-act="pl-next">${ic('check')} Listo</button>
-          <button class="pl-rb" data-act="pl-next" aria-label="Siguiente">${ic('next')}</button>
         </footer>
       </div>
+      <button class="pl-rb pl-side is-l" data-act="pl-prev" aria-label="Ejercicio anterior">${ic('left')}</button>
+      <button class="pl-rb pl-side is-r" data-act="pl-next" aria-label="Ejercicio siguiente">${ic('chevron')}</button>
       <div class="pl-confirm" id="pl-confirm" hidden>
         <div class="pl-box" role="alertdialog" aria-labelledby="pl-ct">
           <h3 id="pl-ct">¿Salir de la rutina?</h3>
@@ -1136,6 +1137,68 @@
     lockWake();
     goStep(0);
     P.timer = setInterval(tick, 100);
+    bindPlayerSwipe();
+  }
+
+  // Deslizar a la izquierda pasa al siguiente ejercicio y a la derecha vuelve al anterior.
+  function bindPlayerSwipe() {
+    const pl = $('#pl');
+    const stage = $('.pl-stage', pl);
+    let d = null;
+    let swallow = false;
+    const move = (x, tr) => {
+      stage.style.transition = tr || '';
+      stage.style.transform = x ? `translateX(${x}px)` : '';
+      stage.style.opacity = x ? String(Math.max(0.35, 1 - Math.abs(x) / 380)) : '';
+    };
+    const back = () => move(0, 'transform .3s cubic-bezier(.2, .9, .3, 1.25), opacity .2s');
+    // dir +1: siguiente · dir -1: anterior
+    const go = (dir) => {
+      const w = pl.clientWidth || 360;
+      move(-dir * w * 0.7, 'transform .16s ease-in, opacity .16s');
+      setTimeout(() => {
+        if (!P || P.done) return;
+        if (dir > 0) next(); else prev();
+        if (P.done) return;
+        move(dir * w * 0.35);
+        void stage.offsetWidth;
+        move(0, 'transform .22s ease-out, opacity .22s');
+      }, 150);
+    };
+    pl.addEventListener('pointerdown', (e) => {
+      swallow = false;
+      if (!P || P.done || P.confirm || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      if (e.target.closest('button, .pl-confirm') || !e.target.closest('.pl-stage, .pl-in')) return;
+      d = { x: e.clientX, y: e.clientY, t: performance.now(), dx: 0, on: false, id: e.pointerId };
+    });
+    pl.addEventListener('pointermove', (e) => {
+      if (!d || e.pointerId !== d.id) return;
+      d.dx = e.clientX - d.x;
+      const dy = e.clientY - d.y;
+      if (!d.on) {
+        if (Math.abs(d.dx) > 10 && Math.abs(d.dx) > Math.abs(dy)) {
+          d.on = true;
+          try { pl.setPointerCapture(d.id); } catch (err) { /* sin captura */ }
+        } else { if (Math.abs(dy) > 12) d = null; return; }
+      }
+      move(d.dx * (P.i === 0 && d.dx > 0 ? 0.3 : 1));
+    });
+    const end = (e) => {
+      if (!d || e.pointerId !== d.id) return;
+      const k = d;
+      d = null;
+      if (!k.on) return;
+      swallow = true;
+      const w = pl.clientWidth || 360;
+      const v = k.dx / Math.max(1, performance.now() - k.t);
+      const dir = k.dx < 0 ? 1 : -1;
+      const far = Math.abs(k.dx) > w * 0.22 || (Math.abs(v) > 0.5 && Math.abs(k.dx) > 30);
+      if (far && !(dir < 0 && P.i === 0)) go(dir); else back();
+    };
+    pl.addEventListener('pointerup', end);
+    pl.addEventListener('pointercancel', (e) => { if (d && e.pointerId === d.id) { d = null; back(); } });
+    // Un arrastre no cuenta como toque.
+    pl.addEventListener('click', (e) => { if (swallow) { swallow = false; e.stopPropagation(); e.preventDefault(); } }, true);
   }
 
   function setTime(secs) {
@@ -1346,11 +1409,18 @@
       P.dur += 15;
       if (P.paused) P.remMs += 15000; else P.endAt += 15000;
     },
-    'pl-beep'(b) { S.beep = !S.beep; save(); b.classList.toggle('is-off', !S.beep); b.setAttribute('aria-pressed', S.beep); b.innerHTML = ic(S.beep ? 'sound' : 'mute'); },
+    // El parlante silencia todo (pitidos y voz); el botón de voz solo apaga la voz.
+    'pl-beep'(b) {
+      S.beep = !S.beep; save();
+      b.classList.toggle('is-off', !S.beep); b.setAttribute('aria-pressed', S.beep); b.innerHTML = ic(S.beep ? 'sound' : 'mute');
+      const v = $('#pl-voice');
+      if (v) v.classList.toggle('is-off', !S.beep || !S.voice);
+      if (!S.beep) cancelVoice();
+    },
     'pl-voice'(b) {
       S.voice = !S.voice; save();
-      b.classList.toggle('is-off', !S.voice); b.setAttribute('aria-pressed', S.voice);
-      if (!S.voice && 'speechSynthesis' in window) speechSynthesis.cancel();
+      b.classList.toggle('is-off', !S.beep || !S.voice); b.setAttribute('aria-pressed', S.voice);
+      if (!S.voice) cancelVoice();
     },
     'pl-exit'() {
       if (!P || P.done) return;

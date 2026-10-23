@@ -472,8 +472,8 @@ code { font: 600 .85em ui-monospace, Menlo, Consolas, monospace; background: var
   position: absolute; z-index: 3; left: 50%; padding: 8px 18px 5px; border: 4px solid currentColor; border-radius: 14px; background: var(--surface);
   font: 900 2.8rem/1 var(--f-display); letter-spacing: .06em; text-transform: uppercase; pointer-events: none; box-shadow: var(--shadow-sm); white-space: nowrap;
 }
-.dk-v.is-down { top: 14%; color: var(--ok); opacity: var(--vd, 0); transform: translateX(-50%) rotate(-8deg) scale(calc(.7 + .3 * var(--vd, 0))); }
-.dk-v.is-up { top: 40%; color: var(--ink-2); opacity: var(--vu, 0); transform: translateX(-50%) rotate(8deg) scale(calc(.7 + .3 * var(--vu, 0))); }
+.dk-v.is-down { top: 14%; color: var(--ink-2); opacity: var(--vd, 0); transform: translateX(-50%) rotate(-8deg) scale(calc(.7 + .3 * var(--vd, 0))); }
+.dk-v.is-up { top: 40%; color: var(--ok); opacity: var(--vu, 0); transform: translateX(-50%) rotate(8deg) scale(calc(.7 + .3 * var(--vu, 0))); }
 .dk-slot { position: absolute; inset: 0; touch-action: pan-y; will-change: transform; }
 .dk-slot.is-prev, .dk-slot.is-next { transform: translateY(14px) scale(.95); }
 .dk-slot.is-prev { opacity: 0; }
@@ -634,3 +634,17 @@ code { font: 600 .85em ui-monospace, Menlo, Consolas, monospace; background: var
   .phone-scroll::-webkit-scrollbar { display: none; }
   body.no-scroll .phone-scroll { overflow: hidden; }
 }
+
+/* ---------- Reproductor: gestos ---------- */
+.pl-stage { touch-action: pan-y; }
+.pl { touch-action: pan-y; }
+/* Flechas tenues a los lados, al medio: indican que se desliza para cambiar de ejercicio. */
+.pl .pl-side {
+  position: absolute; z-index: 2; top: 50%; translate: 0 -50%; width: 38px; height: 38px; opacity: .32; transition: opacity .2s, transform .12s;
+  animation: sidehint 1.5s ease-in-out .6s 2;
+}
+.pl .pl-side:hover, .pl .pl-side:active { opacity: .75; }
+.pl .pl-side.is-l { left: max(4px, env(safe-area-inset-left, 0px)); }
+.pl .pl-side.is-r { right: max(4px, env(safe-area-inset-right, 0px)); }
+.pl .pl-side .ic { width: 20px; height: 20px; stroke-width: 2.8; }
+@keyframes sidehint { 0%, 100% { opacity: .32; } 50% { opacity: .8; } }
