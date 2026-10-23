@@ -34,7 +34,7 @@
   /* ---------- Estado guardado ---------- */
   const KEY = 'forja.v1';
   const OLD_PLAN = ['pdf', 'kb-full', 'pdf', 'db-upper', 'pdf', 'kb-abs-arms', 'rest'];
-  const defaults = () => ({ plan: [...DEFAULT_PLAN], over: {}, hist: [], beep: true, voice: true, week: 1, done: {} });
+  const defaults = () => ({ plan: [...DEFAULT_PLAN], over: {}, hist: [], beep: true, voice: true, week: 1, done: {}, skip: {}, sskip: {}, moved: {} });
   function load() {
     try {
       const j = JSON.parse(localStorage.getItem(KEY));
@@ -45,7 +45,7 @@
       s.plan = s.plan.map((id) => (id === 'pdf' ? 'prog' : id));
       Object.keys(s.over).forEach((k) => { if (s.over[k] === 'pdf') s.over[k] = 'prog'; });
       if (!(s.week >= 1 && s.week <= PROGRAM.length)) s.week = 1;
-      if (!s.done || typeof s.done !== 'object') s.done = {};
+      ['done', 'skip', 'sskip', 'moved'].forEach((k) => { if (!s[k] || typeof s[k] !== 'object') s[k] = {}; });
       return s;
     } catch (e) { return defaults(); }
   }
@@ -149,6 +149,12 @@
     voice: '<path d="M5 5h14a2 2 0 012 2v8a2 2 0 01-2 2h-7l-5 4v-4H5a2 2 0 01-2-2V7a2 2 0 012-2z"/><path d="M8 10h8M8 13h5"/>',
     chevron: '<path d="M9 6l6 6-6 6"/>',
     left: '<path d="M15 6l-6 6 6 6"/>',
+    up: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+    down: '<path d="M12 5v14M6 13l6 6 6-6"/>',
+    undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 010 12h-3"/>',
+    shift: '<path d="M4 12h13M13 6l6 6-6 6"/><path d="M4 6v12"/>',
+    swap: '<path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/>',
+    menu: '<rect x="4" y="4" width="6.5" height="6.5" rx="2"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="2"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="2"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="2"/>',
     flame: '<path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 01-10 0c0-2 1-3 2-4 .3 1.5 1 2 2 2-1-3-.5-5 1-8z"/>',
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     kettlebell: '<path d="M8.5 9.5V7.5a3.5 3.5 0 017 0v2"/><circle cx="12" cy="15" r="6"/>',
@@ -265,18 +271,21 @@
   const PLUS = ['kb-express', 'kb-full'];
   const isShort = (r) => !!r && r.src === 'pdf' && minutesOf(r) < 25;
 
-  /* ---------- Hoy: una tarjeta por día que se desliza ---------- */
+  /* ---------- Hoy: una sola tarjeta grande por día ---------- */
+  // ← → cambia de día · ↓ la hice · ↑ omitir · "Recorrer" pasa la rutina al día siguiente.
   const DAY_RANGE = 60;
   const dayAt = (i) => dstr(addDays(parse(today()), i));
   const dayIndex = (ds) => Math.round((parse(ds) - parse(today())) / 864e5);
   const histOn = (ds) => S.hist.filter((h) => h.d === ds);
+  const closed = (ds) => histOn(ds).length > 0 || !!S.skip[ds];
 
   // Sesión del programa que toca un día: las pendientes se reparten entre los próximos días de programa.
   function progAt(n) {
     for (let w = S.week; w <= PROGRAM.length; w++) {
       const list = SESS[w - 1];
       for (let i = 0; i < list.length; i++) {
-        if (list[i].rest || S.done[sessKey(w, i)]) continue;
+        const k = sessKey(w, i);
+        if (list[i].rest || S.done[k] || S.sskip[k]) continue;
         if (n-- === 0) return buildSession(w, i, 0);
       }
     }
@@ -286,112 +295,160 @@
     const id = routineFor(ds);
     if (id === 'rest') return null;
     if (id !== 'prog') return byId(id);
-    const t = today();
     let n = 0;
-    for (let d = parse(t); dstr(d) < ds; d = addDays(d, 1)) {
+    for (let d = parse(today()); dstr(d) < ds; d = addDays(d, 1)) {
       const k = dstr(d);
-      if (routineFor(k) === 'prog' && !histOn(k).length) n++;
+      if (routineFor(k) === 'prog' && !closed(k)) n++;
     }
     return progAt(n);
   }
   function dayInfo(ds) {
     const hs = histOn(ds);
     const h = hs[hs.length - 1] || null;
-    const r = h ? byId(h.r) : planFor(ds);
-    return { h, r, done: !!h, ended: !h && !r && routineFor(ds) === 'prog' };
+    const sk = !h && S.skip[ds] ? S.skip[ds] : null;
+    const r = h ? byId(h.r) : sk ? byId(sk.r) : planFor(ds);
+    const free = !h && !sk && !r;
+    return { h, sk, r, done: !!h, skipped: !!sk, moved: free && !!S.moved[ds], ended: free && routineFor(ds) === 'prog' };
+  }
+  // Lo que se puede hacer con el gesto vertical.
+  function canVert(ds, dir) {
+    const { r, done, skipped } = dayInfo(ds);
+    if (!r || done || skipped) return false;
+    return dir === 'up' || ds <= today();
   }
 
   function dayCard(i, top) {
     const ds = dayAt(i);
     const t = today();
     const d = parse(ds);
-    const { h, r, done, ended } = dayInfo(ds);
-    const rest = !done && !r;
-    const cat = done ? h.c || (r && r.cat) || 'mix' : r ? r.cat : 'mob';
+    const { h, sk, r, done, skipped, moved, ended } = dayInfo(ds);
+    const rest = !done && !skipped && !r;
+    const cat = done ? h.c || (r && r.cat) || 'mix' : skipped ? sk.c : r ? r.cat : 'mob';
     const list = showcase(r || RT.mov, 6);
     const rel = i === 0 ? 'Hoy' : i === 1 ? 'Mañana' : i === -1 ? 'Ayer' : i > 0 ? `En ${i} días` : `Hace ${-i} días`;
     const fig = top
       ? `<div class="stage-fig fig" id="hero-fig" data-list="${list.join(',')}" role="img" aria-label="Vista previa de los ejercicios"></div><span class="stage-tag" id="hero-tag"></span>`
       : `<div class="stage-fig fig" data-fig="${list[0]}"></div>`;
+
     let stamp = '';
     if (done) stamp = '<span class="stamp is-ok">Hecha</span>';
+    else if (skipped) stamp = '<span class="stamp is-skip">Omitida</span>';
+    else if (moved) stamp = '<span class="stamp is-move">Recorrida</span>';
     else if (rest) stamp = `<span class="stamp is-rest">${ended ? 'Fin' : 'Descanso'}</span>`;
     else if (ds < t) stamp = '<span class="stamp is-no">No cumplida</span>';
-    const name = done ? h.n || (r && r.name) || 'Rutina' : r ? r.name : ended ? 'Programa completo' : 'Día libre';
-    const tag = done
-      ? `${h.m} min${h.manual ? ' · marcada a mano' : ''}${r ? ` · ${ejN(countOf(r))}` : ''}`
-      : r ? r.tagline : ended ? 'Terminaste las 15 semanas del programa.' : 'Recuperar también es entrenar. Si quieres moverte, haz movilidad suave.';
-    const pills = r
-      ? `<span class="pill">${r.sess ? `Programa · semana ${r.sess.w}` : CATS[r.cat].label}</span>${r.goal ? `<span class="pill">${GOALS[r.goal]}</span>` : ''}`
-      : '<span class="pill">Descanso</span>';
-    const meta = r ? `<li>${ic('clock')} ${minutesOf(r)} min</li><li>${ic('list')} ${ejN(countOf(r))}</li>` : `<li>${ic('stretch')} Movilidad · ${minutesOf(RT.mov)} min</li>`;
+
+    const name = done ? h.n || (r && r.name) || 'Rutina' : skipped ? sk.n : r ? r.name : ended ? 'Programa completo' : moved ? 'Rutina recorrida' : 'Día libre';
+    let tag;
+    if (done) tag = `${h.m} min${h.manual ? ' · marcada a mano' : ''}${r ? ` · ${ejN(countOf(r))}` : ''}`;
+    else if (skipped) tag = 'La omitiste. Desliza a los lados para ver otros días.';
+    else if (r) tag = r.tagline;
+    else if (ended) tag = 'Terminaste las 15 semanas del programa.';
+    else if (moved) tag = 'Su rutina pasó al día siguiente. Si quieres moverte, haz movilidad suave.';
+    else tag = 'Recuperar también es entrenar. Si quieres moverte, haz movilidad suave.';
+
+    const pills = r && !skipped
+      ? `<span class="pill">${r.sess ? `Programa · semana ${r.sess.w}` : CATS[r.cat].label}</span>${r.goal ? `<span class="pill">${GOALS[r.goal]}</span>` : ''}<span class="pill">${ic('clock')} ${minutesOf(r)} min</span>`
+      : skipped ? '<span class="pill">Omitida</span>' : `<span class="pill">Descanso</span><span class="pill">${ic('clock')} ${minutesOf(RT.mov)} min</span>`;
+
+    // Botones dentro de la tarjeta.
+    const startId = r ? r.id : 'mov';
     const acts = [];
-    if (ds <= t && !done && r) acts.push(`<button class="dc-a" data-act="mark-done" data-day="${ds}">${ic('check')} La hice</button>`);
-    if (done && h.manual) acts.push(`<button class="dc-a" data-act="unmark" data-day="${ds}">Desmarcar</button>`);
-    if (!done) acts.push(`<button class="dc-a" data-act="change" data-day="${ds}">Cambiar</button>`);
+    if (done) {
+      if (h.manual) acts.push(`<button class="dc-b" data-act="unmark" data-day="${ds}">${ic('undo')} Deshacer</button>`);
+      acts.push(`<button class="dc-go" data-act="start" data-id="${startId}">${ic('play')} Repetir</button>`);
+    } else if (skipped) {
+      acts.push(`<button class="dc-b" data-act="unskip" data-day="${ds}">${ic('undo')} Deshacer</button>`);
+      acts.push(`<button class="dc-go" data-act="start" data-id="${startId}">${ic('play')} Iniciar</button>`);
+    } else if (r) {
+      acts.push(`<button class="dc-b" data-act="shift" data-day="${ds}">${ic('shift')} Recorrer</button>`);
+      acts.push(`<button class="dc-go" data-act="start" data-id="${startId}">${ic('play')} Iniciar</button>`);
+    } else {
+      if (moved) acts.push(`<button class="dc-b" data-act="unshift" data-day="${ds}">${ic('undo')} Deshacer</button>`);
+      acts.push(`<button class="dc-go" data-act="start" data-id="mov">${ic('stretch')} Movilidad</button>`);
+    }
+    const gest = canVert(ds, 'down') ? `<p class="dc-gest">${ic('down')} Desliza abajo si la hiciste · ${ic('up')} arriba para omitir</p>`
+      : canVert(ds, 'up') ? `<p class="dc-gest">${ic('up')} Desliza arriba para omitir</p>` : '';
+
     return `<article class="dk-card day-card cat-${cat} ${rest ? 'is-rest' : ''}" data-act="open-day" data-day="${ds}">
       <div class="dc-stage">
         ${fig}
         <span class="dc-date"><b>${d.getDate()}</b><span>${DAYS_3[dow(d)]}<br>${MONTHS[d.getMonth()].slice(0, 3)}</span></span>
-        <span class="dc-rel">${rel}</span>
+        <span class="dc-tr">
+          ${i === 0 ? `<span class="dc-rel">${rel}</span>` : `<button class="dc-rel is-btn" data-act="day-today" aria-label="${rel}. Volver a hoy">${rel} ${ic('today')}</button>`}
+          ${!done && !skipped ? `<button class="dc-ib" data-act="change" data-day="${ds}" aria-label="Cambiar la rutina de este día">${ic('swap')}</button>` : ''}
+        </span>
+        <button class="dc-nav is-l" data-act="day-go" data-d="-1" aria-label="Día anterior">${ic('left')}</button>
+        <button class="dc-nav is-r" data-act="day-go" data-d="1" aria-label="Día siguiente">${ic('chevron')}</button>
         ${stamp}
       </div>
       <div class="dc-body">
         <div class="hero-top">${pills}</div>
         <h2 class="h-display dc-title ${name.length > 22 ? 'is-long' : ''}">${name}</h2>
         <p class="dc-tag">${tag}</p>
-        <div class="dc-foot"><ul class="hero-meta">${meta}</ul><div class="dc-acts">${acts.join('')}</div></div>
+        ${gest}
+        <div class="dc-acts">${acts.join('')}</div>
       </div>
     </article>`;
   }
 
-  function weekDots(ds) {
-    const t = today();
-    return weekOf(ds).map((k, i) => {
-      const { r, done } = dayInfo(k);
-      const miss = !done && r && k < t;
-      const n = parse(k).getDate();
-      return `<button class="wdot ${k === ds ? 'is-sel' : ''} ${k === t ? 'is-today' : ''} ${done ? 'is-done' : ''} ${miss ? 'is-miss' : ''} ${r || done ? '' : 'is-rest'} cat-${r ? r.cat : 'mob'}"
-        data-act="pick-day" data-day="${k}" aria-pressed="${k === ds}" aria-label="${DAYS_L[i]} ${n}${done ? ', hecha' : miss ? ', no cumplida' : ''}">
-        <span>${DAYS_S[i]}</span><b>${n}</b><i>${done ? ic('check') : ''}</i></button>`;
-    }).join('');
-  }
-
   function viewHoy() {
-    const ws = weekStats();
-    return `
-      <header class="top">
-        <span class="brand"><span class="brand-mark">${ic('kettlebell')}</span>Forja</span>
-        <button class="today-btn" id="today-btn" data-act="day-today" hidden>${ic('today')} Volver a hoy</button>
-      </header>
-      <nav class="wdots" id="wdots" aria-label="Semana"></nav>
-      <div class="deck days" id="day-deck" aria-label="Días: desliza a la izquierda o a la derecha"></div>
-      <div class="dk-ctrl">
-        <button class="dk-btn" data-act="day-go" data-d="-1" aria-label="Día anterior">${ic('left')}</button>
-        <button class="dk-go" id="day-open" data-act="open-day">${ic('play')} Ver rutina</button>
-        <button class="dk-btn" data-act="day-go" data-d="1" aria-label="Día siguiente">${ic('chevron')}</button>
-      </div>
-      <p class="dk-help">Desliza la tarjeta para cambiar de día</p>
-      <div id="day-extra" class="grp"></div>
-      <section class="stats" aria-label="Resumen">
-        <div class="stat"><span class="stat-n">${streak()}</span><span class="stat-l">${ic('flame')} Racha</span></div>
-        <div class="stat"><span class="stat-n">${ws.n}</span><span class="stat-l">Esta semana</span></div>
-        <div class="stat"><span class="stat-n">${ws.min}</span><span class="stat-l">Minutos</span></div>
-      </section>`;
+    return `<h1 class="sr-only">Hoy</h1><div class="deck days v" id="day-deck" aria-label="Días: desliza a los lados para cambiar de día, abajo si la hiciste y arriba para omitir"></div>`;
   }
 
-  // Actualiza lo que depende del día elegido sin rehacer la tarjeta.
-  function syncHoy() {
-    const ds = ui.day;
-    const { r, done } = dayInfo(ds);
-    $('#wdots').innerHTML = weekDots(ds);
-    $('#today-btn').hidden = ds === today();
-    $('#day-open').innerHTML = r ? `${ic('play')} ${done ? 'Ver rutina' : 'Ver ejercicios'}` : `${ic('stretch')} Movilidad`;
-    const extra = $('#day-extra');
-    extra.innerHTML = !done && ds >= today() && isShort(r)
-      ? `<h2 class="h-sec">Súmale full body</h2><p class="muted">La sesión del PDF de este día dura ${minutesOf(r)} min. Complétala con pesa rusa.</p>${PLUS.map((id) => rcard(RT[id])).join('')}`
-      : '';
-    FIG.hydrate(extra);
+  // Marca un día como hecho o lo omite. Devuelve cómo deshacerlo.
+  function markDone(ds) {
+    const { r } = dayInfo(ds);
+    if (!r) return null;
+    const entry = { d: ds, r: r.id, n: r.name, c: r.cat, m: minutesOf(r), e: 0, t: Date.now(), manual: 1 };
+    S.hist.push(entry);
+    const k = r.sess ? sessKey(r.sess.w, r.sess.idx) : null;
+    const week = S.week;
+    if (k) { S.done[k] = ds; if (r.sess.w > S.week) S.week = r.sess.w; }
+    save();
+    return () => { S.hist = S.hist.filter((x) => x !== entry); if (k && S.done[k] === ds) delete S.done[k]; S.week = week; save(); };
+  }
+  function omitDay(ds) {
+    const { r } = dayInfo(ds);
+    if (!r) return null;
+    const k = r.sess ? sessKey(r.sess.w, r.sess.idx) : null;
+    S.skip[ds] = { r: r.id, n: r.name, c: r.cat, s: k };
+    if (k) S.sskip[k] = ds;
+    save();
+    return () => clearSkip(ds);
+  }
+  function clearSkip(ds) {
+    const sk = S.skip[ds];
+    if (!sk) return;
+    if (sk.s && S.sskip[sk.s] === ds) delete S.sskip[sk.s];
+    delete S.skip[ds];
+    save();
+  }
+  // Recorrer: la rutina de este día pasa al siguiente y las demás se corren hasta el próximo descanso.
+  function shiftDay(ds) {
+    let carry = routineFor(ds);
+    if (carry === 'rest') return null;
+    const prev = { [ds]: S.over[ds] === undefined ? null : S.over[ds] };
+    S.over[ds] = 'rest';
+    let to = null;
+    for (let k = 1; k <= 7; k++) {
+      const d = dstr(addDays(parse(ds), k));
+      const cur = routineFor(d);
+      prev[d] = S.over[d] === undefined ? null : S.over[d];
+      S.over[d] = carry;
+      if (!to) to = d;
+      if (cur === 'rest') break;
+      carry = cur;
+    }
+    S.moved[ds] = prev; // cómo estaban los días, para poder deshacer
+    save();
+    return { to, undo: () => unshiftDay(ds) };
+  }
+  function unshiftDay(ds) {
+    const prev = S.moved[ds];
+    if (!prev) return;
+    Object.keys(prev).forEach((d) => { if (prev[d] === null) delete S.over[d]; else S.over[d] = prev[d]; });
+    delete S.moved[ds];
+    save();
   }
 
   let dayDeck = null;
@@ -405,24 +462,35 @@
       has: (k) => Math.abs(k) <= DAY_RANGE,
       get: dayCard,
       hint: (k) => { const d = parse(dayAt(k)); return `${DAYS_3[dow(d)]} ${d.getDate()}`; },
-      onChange: (k) => { ui.day = dayAt(k); syncHoy(); startRotor(); }
+      onChange: (k) => { ui.day = dayAt(k); startRotor(); },
+      canVert: (k, dir) => canVert(dayAt(k), dir),
+      onVert: (k, dir) => {
+        const ds = dayAt(k);
+        const undo = dir === 'down' ? markDone(ds) : omitDay(ds);
+        toast(dir === 'down' ? '¡Hecha!' : 'Omitida', () => { undo(); ui.day = ds; render(); });
+      },
+      onDenied: (k, dir) => {
+        const { r, done, skipped } = dayInfo(dayAt(k));
+        toast(!r ? 'Es día de descanso' : done ? 'Ya está hecha' : skipped ? 'Ya está omitida' : dir === 'down' ? 'Ese día todavía no llega' : 'No se puede');
+      }
     });
     if (first) root.classList.add('nudge');
   }
 
-  /* ---------- Mazo de tarjetas: se arrastran a los lados como en Tinder ---------- */
-  // o: { i, has(i), get(i, arriba) → html, hint(i) → texto, onChange(i) }
+  /* ---------- Mazo de tarjetas: se arrastran como en Tinder ---------- */
+  // o: { i, has(i), get(i, arriba) → html, hint(i), onChange(i), canVert?(i, 'up'|'down'), onVert?(i, dir), onDenied?(i, dir) }
   function makeDeck(root, o) {
     const st = { i: o.i, drag: null, busy: false, swallow: false };
     const slot = (pos) => root.querySelector(`:scope > .dk-slot.is-${pos}`);
     const reducedMotion = () => window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const vstamps = o.canVert ? '<span class="dk-v is-down">Hecha</span><span class="dk-v is-up">Omitir</span>' : '';
 
     function paint() {
       const html = (k, pos) => {
         if (!o.has(k)) return '';
         const top = pos === 'top';
         const hints = top
-          ? `<span class="dk-hint is-l">${o.has(k - 1) ? `${ic('left')} ${o.hint(k - 1)}` : ''}</span><span class="dk-hint is-r">${o.has(k + 1) ? `${o.hint(k + 1)} ${ic('chevron')}` : ''}</span>`
+          ? `<span class="dk-hint is-l">${o.has(k - 1) ? `${ic('left')} ${o.hint(k - 1)}` : ''}</span><span class="dk-hint is-r">${o.has(k + 1) ? `${o.hint(k + 1)} ${ic('chevron')}` : ''}</span>${vstamps}`
           : '';
         return `<div class="dk-slot is-${pos}" ${top ? '' : 'aria-hidden="true" inert'}>${o.get(k, top)}${hints}</div>`;
       };
@@ -430,16 +498,20 @@
       FIG.hydrate(root);
       if (o.onChange) o.onChange(st.i);
     }
-    function setTop(dx, dy, tr) {
+    // Mueve la tarjeta de arriba y enciende la pista que corresponda.
+    function setTop(dx, dy, tr, axis) {
       const top = slot('top');
       if (!top) return;
       top.style.transition = tr || '';
-      top.style.transform = dx || dy ? `translate(${dx}px, ${dy}px) rotate(${dx * 0.05}deg)` : '';
-      const p = Math.min(1, Math.abs(dx) / ((root.clientWidth || 1) * 0.3));
-      top.style.setProperty('--hl', dx > 0 ? p : 0);
-      top.style.setProperty('--hr', dx < 0 ? p : 0);
+      top.style.transform = dx || dy ? `translate(${dx}px, ${dy}px) rotate(${axis === 'y' ? 0 : dx * 0.05}deg)` : '';
+      const px = Math.min(1, Math.abs(dx) / ((root.clientWidth || 1) * 0.3));
+      const py = Math.min(1, Math.abs(dy) / ((root.clientHeight || 1) * 0.16));
+      top.style.setProperty('--hl', axis !== 'y' && dx > 0 ? px : 0);
+      top.style.setProperty('--hr', axis !== 'y' && dx < 0 ? px : 0);
+      top.style.setProperty('--vd', axis === 'y' && dy > 0 ? py : 0);
+      top.style.setProperty('--vu', axis === 'y' && dy < 0 ? py : 0);
     }
-    // dir +1: siguiente (la tarjeta sale por la izquierda) · dir -1: anterior.
+    // dir +1: siguiente · dir -1: anterior. p de 0 a 1.
     function under(dir, p, tr) {
       const show = slot(dir > 0 ? 'next' : 'prev');
       const hide = slot(dir > 0 ? 'prev' : 'next');
@@ -471,6 +543,26 @@
       under(dir, 1, 'transform .3s ease');
       setTimeout(() => { st.i += dir; st.busy = false; paint(); }, 290);
     }
+    // Gesto vertical: la tarjeta sale por arriba o por abajo y aparece el día siguiente.
+    function flyV(dir) {
+      if (st.busy) return;
+      if (!o.canVert || !o.canVert(st.i, dir)) { reset(true); if (o.onDenied) o.onDenied(st.i, dir); return; }
+      root.classList.remove('nudge');
+      const done = () => {
+        o.onVert(st.i, dir);
+        if (o.has(st.i + 1)) st.i += 1;
+        st.busy = false;
+        paint();
+      };
+      if (reducedMotion()) { done(); return; }
+      st.busy = true;
+      const h = root.clientHeight || 600;
+      setTop(0, (dir === 'down' ? 1 : -1) * h * 1.15, 'transform .32s cubic-bezier(.4, .1, .7, 1)', 'y');
+      const top = slot('top');
+      if (top) top.style.setProperty(dir === 'down' ? '--vd' : '--vu', 1);
+      under(1, 1, 'transform .32s ease');
+      setTimeout(done, 300);
+    }
 
     root.addEventListener('pointerdown', (e) => {
       st.swallow = false;
@@ -478,46 +570,61 @@
       const top = slot('top');
       if (!top || !top.contains(e.target)) return;
       reset(false);
-      st.drag = { x: e.clientX, y: e.clientY, t: performance.now(), dx: 0, dy: 0, on: false, id: e.pointerId };
+      st.drag = { x: e.clientX, y: e.clientY, t: performance.now(), dx: 0, dy: 0, axis: null, id: e.pointerId };
     });
     root.addEventListener('pointermove', (e) => {
       const d = st.drag;
       if (!d || e.pointerId !== d.id) return;
       d.dx = e.clientX - d.x;
       d.dy = e.clientY - d.y;
-      if (!d.on) {
-        if (Math.abs(d.dx) > 8 && Math.abs(d.dx) > Math.abs(d.dy)) {
-          d.on = true;
-          root.classList.add('is-drag');
-          root.classList.remove('nudge');
-          try { slot('top').setPointerCapture(d.id); } catch (err) { /* sin captura */ }
-        } else {
-          if (Math.abs(d.dy) > 10) st.drag = null;
-          return;
-        }
+      if (!d.axis) {
+        const ax = Math.abs(d.dx);
+        const ay = Math.abs(d.dy);
+        if (ax > 8 && ax > ay) d.axis = 'x';
+        else if (ay > 8 && o.canVert) d.axis = 'y';
+        else { if (ay > 10) st.drag = null; return; }
+        root.classList.add('is-drag');
+        root.classList.remove('nudge');
+        try { slot('top').setPointerCapture(d.id); } catch (err) { /* sin captura */ }
       }
-      const dir = d.dx < 0 ? 1 : -1;
-      const ok = o.has(st.i + dir);
-      const dx = ok ? d.dx : d.dx * 0.3; // en el borde se resiste
-      setTop(dx, d.dy * 0.15);
-      if (!ok) { const top = slot('top'); top.style.setProperty('--hl', 0); top.style.setProperty('--hr', 0); }
-      under(dir, Math.min(1, Math.abs(dx) / ((root.clientWidth || 1) * 0.5)));
+      if (d.axis === 'x') {
+        const dir = d.dx < 0 ? 1 : -1;
+        const ok = o.has(st.i + dir);
+        const dx = ok ? d.dx : d.dx * 0.3; // en el borde se resiste
+        setTop(dx, d.dy * 0.15, '', ok ? 'x' : 'none');
+        under(dir, Math.min(1, Math.abs(dx) / ((root.clientWidth || 1) * 0.5)));
+      } else {
+        const dir = d.dy > 0 ? 'down' : 'up';
+        const ok = o.canVert(st.i, dir);
+        const dy = ok ? d.dy : d.dy * 0.3;
+        setTop(d.dx * 0.15, dy, '', ok ? 'y' : 'none');
+        if (ok) under(1, Math.min(1, Math.abs(dy) / ((root.clientHeight || 1) * 0.4)));
+      }
     });
     root.addEventListener('pointerup', (e) => {
       const d = st.drag;
       if (!d || e.pointerId !== d.id) return;
       st.drag = null;
-      if (!d.on) return;
+      if (!d.axis) return;
       root.classList.remove('is-drag');
       st.swallow = true;
-      const w = root.clientWidth || 360;
-      const v = d.dx / Math.max(1, performance.now() - d.t);
-      const dir = d.dx < 0 ? 1 : -1;
-      if (o.has(st.i + dir) && (Math.abs(d.dx) > w * 0.25 || (Math.abs(v) > 0.5 && Math.abs(d.dx) > 30))) fly(dir, d.dy * 0.15);
-      else reset(true);
+      const dt = Math.max(1, performance.now() - d.t);
+      if (d.axis === 'x') {
+        const w = root.clientWidth || 360;
+        const v = d.dx / dt;
+        const dir = d.dx < 0 ? 1 : -1;
+        if (o.has(st.i + dir) && (Math.abs(d.dx) > w * 0.25 || (Math.abs(v) > 0.5 && Math.abs(d.dx) > 30))) fly(dir, d.dy * 0.15);
+        else reset(true);
+      } else {
+        const h = root.clientHeight || 600;
+        const v = d.dy / dt;
+        const dir = d.dy > 0 ? 'down' : 'up';
+        if (Math.abs(d.dy) > h * 0.16 || (Math.abs(v) > 0.5 && Math.abs(d.dy) > 40)) flyV(dir);
+        else reset(true);
+      }
     });
     root.addEventListener('pointercancel', () => {
-      if (st.drag && st.drag.on) { root.classList.remove('is-drag'); reset(true); }
+      if (st.drag && st.drag.axis) { root.classList.remove('is-drag'); reset(true); }
       st.drag = null;
     });
     // Un arrastre no cuenta como toque.
@@ -531,6 +638,7 @@
     paint();
     return {
       go: (dir) => fly(dir),
+      vert: (dir) => flyV(dir),
       jump: (k) => { if (o.has(k)) { st.i = k; paint(); } },
       paint
     };
@@ -696,14 +804,15 @@
     const rows = SESS[w - 1].map((d, i) => {
       if (d.rest) return `<li class="sess-row is-rest"><span class="sess-n">${ic('rest')}</span><span class="sess-t"><b>${d.n}</b><small>Descanso</small></span></li>`;
       const isDone = !!S.done[sessKey(w, i)];
+      const isSkip = !isDone && !!S.sskip[sessKey(w, i)];
       const r = buildSession(w, i, 0);
       const multi = d.options.length > 1;
       const pn = d.options[0].parts.filter((p) => typeof p === 'string');
       const sub = multi ? 'Elige una opción' : (pn.length === 1 ? RT[pn[0]].tagline : `${pn.length} tandas${pauseText(d.options[0].parts)}`);
       const title = multi ? `${d.n} · ${d.options.map((o) => o.label).join(' o ')}` : (d.n ? `${d.n} · ${r.name.split(' · ').slice(1).join(' · ') || r.name}` : r.name);
-      const side = isDone ? `<span class="sess-s is-done">${ic('check')}</span>` : `<span class="sess-s">${multi ? '' : minutesOf(r) + ' min'}</span>`;
+      const side = isDone ? `<span class="sess-s is-done">${ic('check')}</span>` : isSkip ? '<span class="sess-s">Omitida</span>' : `<span class="sess-s">${multi ? '' : minutesOf(r) + ' min'}</span>`;
       const main = multi ? 'div' : 'button';
-      return `<li class="sess-row ${isDone ? 'is-done' : ''}">
+      return `<li class="sess-row ${isDone ? 'is-done' : ''} ${isSkip ? 'is-skip' : ''}">
         <${main} class="sess-main" ${multi ? '' : `data-act="sess" data-w="${w}" data-i="${i}" data-o="0"`}>
           <span class="sess-n">${isDone ? ic('check') : i + 1}</span>
           <span class="sess-t"><b>${title}</b><small>${sub}</small></span>
@@ -713,7 +822,8 @@
       </li>`;
     }).join('');
 
-    const complete = total && done === total;
+    const skipped = SESS[w - 1].filter((d, i) => !d.rest && !S.done[sessKey(w, i)] && S.sskip[sessKey(w, i)]).length;
+    const complete = total && done + skipped === total;
     return `
       <header class="top"><div><h1 class="h-display page-title">Programa</h1><p class="page-sub">15 semanas, con tus entrenamientos del PDF.</p></div></header>
       <section class="wkhead cat-mix">
@@ -725,7 +835,7 @@
         </div>
         <button class="wk-btn" data-act="week-go" data-d="1" aria-label="Semana siguiente" ${w >= PROGRAM.length ? 'disabled' : ''}>${ic('chevron')}</button>
         <div class="wkhead-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
-        <p class="wkhead-sub">${done} de ${total} sesiones hechas</p>
+        <p class="wkhead-sub">${done} de ${total} sesiones hechas${skipped ? ` · ${skipped} omitida${skipped > 1 ? 's' : ''}` : ''}</p>
       </section>
       <section class="grp cat-mix">
         <h2 class="h-sec">Sesiones de la semana</h2>
@@ -800,14 +910,15 @@
 
   const TABS = { hoy: ['today', 'Hoy'], rutinas: ['list', 'Rutinas'], programa: ['flag', 'Programa'], progreso: ['chart', 'Progreso'] };
   function render() {
-    view.innerHTML = { hoy: viewHoy, rutinas: viewRutinas, programa: viewPrograma, progreso: viewProgreso }[ui.tab]();
-    document.querySelectorAll('.tab').forEach((b) => {
-      const [icon, label] = TABS[b.dataset.tab];
-      const on = b.dataset.tab === ui.tab;
-      b.innerHTML = `${ic(icon)}<span>${label}</span>`;
-      b.classList.toggle('is-on', on);
-      if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
-    });
+    fabToggle(false);
+    const back = ui.tab === 'hoy' ? '' : `<button class="back-btn" data-act="tab" data-tab="hoy">${ic('left')} Hoy</button>`;
+    view.innerHTML = back + { hoy: viewHoy, rutinas: viewRutinas, programa: viewPrograma, progreso: viewProgreso }[ui.tab]();
+    document.body.classList.toggle('is-hoy', ui.tab === 'hoy');
+    $('#fab-menu').innerHTML = Object.keys(TABS).map((k) => {
+      const [icon, label] = TABS[k];
+      const on = k === ui.tab;
+      return `<button class="fab-it ${on ? 'is-on' : ''}" data-act="tab" data-tab="${k}" ${on ? 'aria-current="page"' : ''}>${label}${ic(icon)}</button>`;
+    }).join('');
     if (ui.tab === 'hoy') mountHoy(); else dayDeck = null;
     FIG.hydrate(view);
     startRotor();
@@ -862,12 +973,24 @@
     }
   }
   let toastT;
-  function toast(msg) {
+  function toast(msg, undo) {
     const el = $('#toast');
-    el.textContent = msg;
+    ui.undo = undo || null;
+    el.innerHTML = `<span>${msg}</span>${undo ? `<button class="toast-b" data-act="undo">${ic('undo')} Deshacer</button>` : ''}`;
     el.hidden = false;
     clearTimeout(toastT);
-    toastT = setTimeout(() => { el.hidden = true; }, 1800);
+    toastT = setTimeout(() => { el.hidden = true; ui.undo = null; }, undo ? 4500 : 1800);
+  }
+  // Un solo botón flotante que abre Hoy, Rutinas, Programa y Progreso.
+  function fabToggle(open) {
+    const fab = $('#fab');
+    if (!fab) return;
+    fab.classList.toggle('is-open', open);
+    $('#fab-menu').hidden = !open;
+    $('#fab-back').hidden = !open;
+    const b = $('.fab-btn', fab);
+    b.setAttribute('aria-expanded', String(open));
+    b.innerHTML = ic(open ? 'close' : 'menu');
   }
 
   function exSheet(id, cat) {
@@ -1165,7 +1288,6 @@
   /* ---------- Acciones ---------- */
   const actions = {
     tab(b) { ui.tab = b.dataset.tab; ui.confirmReset = false; render(); toTop(); },
-    'pick-day'(b) { if (dayDeck) dayDeck.jump(dayIndex(b.dataset.day)); else { ui.day = b.dataset.day; render(); } },
     start(b) { startRoutine(b.dataset.id); },
     detail(b) { openDeck(b.dataset.id); },
     sess(b) { openDeck(`s:${b.dataset.w}:${b.dataset.i}:${b.dataset.o}`); },
@@ -1177,16 +1299,19 @@
     'day-today'() { if (dayDeck) dayDeck.jump(0); },
     'ex-go'(b) { if (exDeck) exDeck.go(Number(b.dataset.d)); },
     'dv-close'() { closeDeck(); },
-    'mark-done'(b) {
+    unskip(b) { clearSkip(b.dataset.day); render(); },
+    shift(b) {
       const ds = b.dataset.day;
-      const { r, done } = dayInfo(ds);
-      if (!r || done) return;
-      S.hist.push({ d: ds, r: r.id, n: r.name, c: r.cat, m: minutesOf(r), e: 0, t: Date.now(), manual: 1 });
-      if (r.sess) { S.done[sessKey(r.sess.w, r.sess.idx)] = ds; if (r.sess.w > S.week) S.week = r.sess.w; }
-      save();
-      render();
-      toast('Marcada como hecha');
+      const res = shiftDay(ds);
+      if (!res) return;
+      const d = parse(res.to);
+      toast(`Rutina recorrida al ${DAYS_L[dow(d)].toLowerCase()} ${d.getDate()}`, () => { res.undo(); ui.day = ds; render(); });
+      if (dayDeck) { dayDeck.paint(); dayDeck.go(1); }
     },
+    unshift(b) { unshiftDay(b.dataset.day); render(); toast('Rutina devuelta a su día'); },
+    undo() { const fn = ui.undo; $('#toast').hidden = true; ui.undo = null; if (fn) fn(); },
+    fab() { fabToggle(!$('#fab').classList.contains('is-open')); },
+    'fab-close'() { fabToggle(false); },
     unmark(b) {
       const ds = b.dataset.day;
       S.hist.filter((h) => h.d === ds && h.manual).forEach((h) => {
@@ -1211,7 +1336,7 @@
     'cal-next'() { ui.cal.m++; if (ui.cal.m > 11) { ui.cal.m = 0; ui.cal.y++; } render(); },
     reset() { ui.confirmReset = true; render(); },
     'reset-cancel'() { ui.confirmReset = false; render(); },
-    'reset-ok'() { S.hist = []; S.done = {}; S.week = 1; save(); ui.confirmReset = false; render(); toast('Historial borrado'); },
+    'reset-ok'() { S.hist = []; S.done = {}; S.skip = {}; S.sskip = {}; S.moved = {}; S.week = 1; save(); ui.confirmReset = false; render(); toast('Historial borrado'); },
 
     'pl-pause'() { togglePause(); },
     'pl-next'() { next(); },
@@ -1267,6 +1392,7 @@
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
+      if ($('#fab').classList.contains('is-open')) return fabToggle(false);
       if (!$('#sheet').hidden) return closeSheet();
       if (!$('#deckv').hidden) return closeDeck();
       if (P && !P.done) return P.confirm ? actions['pl-stay']() : actions['pl-exit']();
@@ -1279,6 +1405,10 @@
     if (!P && $('#sheet').hidden && (e.key === 'ArrowLeft' || e.key === 'ArrowRight') && !e.target.closest('select, input')) {
       const dk = !$('#deckv').hidden ? exDeck : ui.tab === 'hoy' ? dayDeck : null;
       if (dk) dk.go(e.key === 'ArrowRight' ? 1 : -1);
+    }
+    if (!P && $('#sheet').hidden && $('#deckv').hidden && ui.tab === 'hoy' && dayDeck && (e.key === 'ArrowDown' || e.key === 'ArrowUp') && !e.target.closest('select, input')) {
+      e.preventDefault();
+      dayDeck.vert(e.key === 'ArrowDown' ? 'down' : 'up');
     }
   });
 

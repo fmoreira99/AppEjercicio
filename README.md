@@ -9,10 +9,19 @@ App personal de ejercicio: plan semanal, rutinas con temporizador guiado (sonido
 - Los datos (plan e historial) se guardan solo en el dispositivo.
 - Formato vertical 9:16: en el celular ocupa toda la pantalla y en el computador o la tablet se ve dentro de un marco de teléfono.
 
-### Tarjetas que se deslizan
+### Una sola tarjeta
 
-- **Hoy** muestra una tarjeta por día. Desliza a la izquierda para ir al día siguiente y a la derecha para el anterior (o usa las flechas). Cada tarjeta dice si la rutina está **Hecha**, **No cumplida** o es **Descanso**. Con "La hice" puedes marcar una rutina que hiciste sin la app.
-- Al abrir un día (o una rutina desde Rutinas o Programa), los ejercicios aparecen como un mazo de tarjetas: deslizas para verlos uno a uno y tocas una tarjeta para ver la postura inicial y final. **Iniciar** abre el temporizador guiado.
+**Hoy** es una tarjeta grande por día, a pantalla completa:
+
+| Gesto | Qué hace |
+|---|---|
+| ← → | Cambia de día |
+| ↓ | La hiciste (solo hoy o días pasados) |
+| ↑ | Omitir |
+
+En la tarjeta: **Iniciar** abre el temporizador y **Recorrer** pasa la rutina al día siguiente (las demás se corren hasta el próximo descanso). Tocar la tarjeta muestra los ejercicios como mazo. Todo se puede deshacer.
+
+El botón flotante de la esquina abre Hoy, Rutinas, Programa y Progreso.
 
 ## Programa del PDF
 
