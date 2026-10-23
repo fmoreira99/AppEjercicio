@@ -29,6 +29,8 @@ En el temporizador, desliza a la izquierda para pasar al siguiente ejercicio y a
 
 La pestaña **Programa** tiene las 15 semanas del PDF (Aphrodite, Artemis, Hades, Iris, Venus, Poseidon, Dione, Zeus, Metis y los entrenamientos "MAX"), con sus pausas. Cada sesión terminada se marca sola. En el plan semanal, los días con "Programa del PDF" toman la siguiente sesión pendiente de la semana que estés haciendo.
 
+Para encontrar cualquier entrenamiento: en la tarjeta del día, **Cambiar** lista los 14 del PDF (y todas las demás rutinas) agrupados; en **Programa**, los números 1–15 saltan a esa semana; y al abrir una sesión, la primera tarjeta muestra su estructura completa (ejercicios, repeticiones y pausas).
+
 El PDF no dice cuántas rondas tiene Zeus; se dejaron 3 (cámbialo en `js/data.js`). Varios ejercicios del PDF se hacen en el suelo (flexiones, abdominales, burpees, escaladores) y las dominadas necesitan una barra.
 
 ## Rutinas incluidas

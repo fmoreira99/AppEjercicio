@@ -203,6 +203,9 @@
   const secsOf = (st) => (st.type === 'rest' ? st.dur : st.mode === 'reps' ? repSecs(st) : st.dur);
   const minutesOf = (r) => Math.max(1, Math.round(stepsOf(r).reduce((a, s) => a + secsOf(s), 0) / 60));
   const countOf = (r) => new Set(stepsOf(r).filter((s) => s.type === 'work').map((s) => s.ex)).size;
+  // Series = cada vez que haces un ejercicio (ejercicios × rondas).
+  const setsOf = (r) => stepsOf(r).filter((s) => s.type === 'work').length;
+  const sets = (r) => { const n = setsOf(r); return `${n} ${n === 1 ? 'serie' : 'series'}`; };
   const fmtSecs = (n) => (n >= 120 ? `${Math.round(n / 60)} min` : `${n} s`);
   function repsLabel(a) {
     if (!Array.isArray(a)) return String(a);
@@ -374,8 +377,8 @@
         ${fig}
         <span class="dc-date"><b>${d.getDate()}</b><span>${DAYS_3[dow(d)]}<br>${MONTHS[d.getMonth()].slice(0, 3)}</span></span>
         <span class="dc-tr">
-          ${i === 0 ? `<span class="dc-rel">${rel}</span>` : `<button class="dc-rel is-btn" data-act="day-today" aria-label="${rel}. Volver a hoy">${rel} ${ic('today')}</button>`}
-          ${!done && !skipped ? `<button class="dc-ib" data-act="change" data-day="${ds}" aria-label="Cambiar la rutina de este día">${ic('swap')}</button>` : ''}
+          ${i === 0 ? `<span class="dc-rel">${rel}</span>` : `<button class="dc-rel is-btn" data-act="day-today" aria-label="${rel}. Volver a hoy" title="Volver a hoy">${rel}</button>`}
+          ${!done && !skipped ? `<button class="dc-rel is-chg" data-act="change" data-day="${ds}" aria-label="Cambiar la rutina de este día">${ic('swap')} Cambiar</button>` : ''}
         </span>
         <button class="dc-nav is-l" data-act="day-go" data-d="-1" aria-label="Día anterior">${ic('left')}</button>
         <button class="dc-nav is-r" data-act="day-go" data-d="1" aria-label="Día siguiente">${ic('chevron')}</button>
@@ -657,17 +660,39 @@
     if (exs.some((e) => EX[e].floor)) notes.push('Incluye ejercicios en el suelo.');
     const figs = showcase(r, 4);
     const blocks = r.sections.map((s) => `<li><b>${s.title}</b><span>${roundsOf(s) ? `${roundsOf(s)} · ` : ''}${ejN(s.items.length)}</span></li>`).join('');
+    // Estructura completa (ejercicio y repeticiones) cuando cabe en la tarjeta.
+    const chips = [];
+    r.sections.forEach((sec) => {
+      const rl = sec.rounds > 1 ? `${sec.rounds} rondas` : '';
+      const head = r.sections.length > 1 ? sec.title + (rl && !/ronda/i.test(sec.title) ? ` · ${rl}` : '') : rl;
+      if (head) chips.push(`<li class="is-sec">${head}</li>`);
+      sec.items.forEach((it) => chips.push(`<li><b>${EX[it.ex].n}</b> ${specOf(it)}</li>`));
+      if (sec.roundRest >= 60) chips.push(`<li class="is-pause">${fmtSecs(sec.roundRest)} entre rondas</li>`);
+      if (sec.pause) chips.push(`<li class="is-pause">Pausa ${fmtSecs(sec.pause)}</li>`);
+    });
+    const structure = `<ul class="in-list">${chips.join('')}</ul><ul class="in-blocks" hidden>${blocks}</ul>`;
     return `<article class="dk-card intro-card cat-${r.cat}">
       <div class="in-grid n${figs.length}">${figs.map((id) => `<span class="in-cell fig" data-fig="${id}" ${top ? 'data-live' : ''}></span>`).join('')}</div>
       <div class="dc-body">
-        <div class="hero-top"><span class="pill">${r.sess ? `Programa · semana ${r.sess.w}` : CATS[r.cat].label}</span><span class="pill">${ic('clock')} ${minutesOf(r)} min</span><span class="pill">${ejN(countOf(r))}</span></div>
+        <div class="hero-top"><span class="pill">${r.sess ? `Programa · semana ${r.sess.w}` : CATS[r.cat].label}</span><span class="pill">${ic('clock')} ${minutesOf(r)} min</span><span class="pill">${ejN(countOf(r))}${setsOf(r) > countOf(r) ? ` · ${sets(r)}` : ''}</span></div>
         <h2 class="h-display dc-title ${r.name.length > 22 ? 'is-long' : ''}">${r.name}</h2>
         <p class="dc-tag">${r.tagline}</p>
-        <ul class="in-blocks">${blocks}</ul>
+        ${structure}
         ${notes.length ? `<p class="in-note">${notes.join(' ')}</p>` : ''}
         <p class="in-swipe">Desliza para ver cada ejercicio ${ic('chevron')}</p>
       </div>
     </article>`;
+  }
+  // Muestra la estructura completa y, si no cabe en la tarjeta, el resumen por bloques.
+  function fitIntro(root) {
+    root.querySelectorAll('.intro-card').forEach((c) => {
+      const l = c.querySelector('.in-list');
+      const bl = c.querySelector('.in-blocks');
+      if (!l || !bl) return;
+      l.hidden = false;
+      bl.hidden = true;
+      if (c.querySelector('.in-grid').getBoundingClientRect().height < 90) { l.hidden = true; bl.hidden = false; }
+    });
   }
   function exCard(r, x, k, total, top) {
     const e = EX[x.it.ex];
@@ -721,6 +746,7 @@
       get: (k, top) => (k === 0 ? introCard(r, top) : exCard(r, items[k - 1], k, n - 1, top)),
       hint: (k) => (k === 0 ? 'Resumen' : EX[items[k - 1].it.ex].n),
       onChange: (k) => {
+        fitIntro($('#ex-deck'));
         $('#dv-count').textContent = k === 0 ? 'Resumen' : `${k}/${n - 1}`;
         document.querySelectorAll('#dv-segs i').forEach((el, j) => el.classList.toggle('on', j <= k));
       }
@@ -837,6 +863,7 @@
         <div class="wkhead-bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div>
         <p class="wkhead-sub">${done} de ${total} sesiones hechas${skipped ? ` · ${skipped} omitida${skipped > 1 ? 's' : ''}` : ''}</p>
       </section>
+      <div class="gchips wk-chips" role="group" aria-label="Ir a una semana">${PROGRAM.map((_, k) => `<button class="gchip ${k + 1 === w ? 'is-on' : ''}" data-act="week-set" data-w="${k + 1}" aria-pressed="${k + 1 === w}" ${PROGRAM_NAMES[k] ? `title="${PROGRAM_NAMES[k]}"` : ''}>${k + 1}${PROGRAM_NAMES[k] ? ` ${ic('flame')}` : ''}</button>`).join('')}</div>
       <section class="grp cat-mix">
         <h2 class="h-sec">Sesiones de la semana</h2>
         <ul class="sess">${rows}</ul>
@@ -922,6 +949,8 @@
     if (ui.tab === 'hoy') mountHoy(); else dayDeck = null;
     FIG.hydrate(view);
     startRotor();
+    const wc = $('.wk-chips', view);
+    if (wc) { const on = $('.is-on', wc); if (on) wc.scrollLeft = on.offsetLeft - (wc.clientWidth - on.clientWidth) / 2; }
   }
 
   /* Vista previa de la portada: va pasando por los ejercicios de la rutina. */
@@ -1014,19 +1043,24 @@
   function changeSheet() {
     const ds = ui.day;
     const cur = routineFor(ds);
-    const opts = [
-      { id: 'prog', name: 'Programa del PDF', cat: 'mix', sub: `Semana ${S.week} · siguiente sesión` },
-      ...ROUTINES.filter((r) => !r.src).map((r) => ({ id: r.id, name: r.name, cat: r.cat, sub: `${CATS[r.cat].label} · ${GOALS[r.goal]} · ${minutesOf(r)} min` })),
-      ...ROUTINES.filter((r) => r.src).map((r) => ({ id: r.id, name: r.name, cat: r.cat, sub: `Entrenamiento del PDF · ${minutesOf(r)} min` })),
-      { id: 'rest', name: 'Descanso', cat: 'mob', sub: 'Sin entrenamiento' }
-    ];
+    const line = (r) => `${ejN(countOf(r))}${setsOf(r) > countOf(r) ? ` · ${sets(r)}` : ''} · ${minutesOf(r)} min`;
+    const groups = [
+      { t: 'Programa del PDF', list: [{ id: 'prog', name: 'Siguiente sesión del programa', cat: 'mix', sub: `Semana ${S.week} de ${PROGRAM.length}` }] },
+      { t: `Entrenamientos del PDF · ${ROUTINES.filter((r) => r.src).length}`, list: ROUTINES.filter((r) => r.src).map((r) => ({ id: r.id, name: r.name, cat: r.cat, sub: `${line(r)} · ${r.tagline}` })) },
+      ...Object.keys(CATS).filter((c) => c !== 'mix').map((c) => ({
+        t: CATS[c].label,
+        list: ROUTINES.filter((r) => !r.src && r.cat === c).map((r) => ({ id: r.id, name: r.name, cat: r.cat, sub: `${GOALS[r.goal]} · ${line(r)}` }))
+      })),
+      { t: 'Descanso', list: [{ id: 'rest', name: 'Descanso', cat: 'mob', sub: 'Sin entrenamiento' }] }
+    ].filter((g) => g.list.length);
+    const opt = (o) => `<button class="opt cat-${o.cat} ${cur === o.id ? 'is-on' : ''}" data-act="set-over" data-id="${o.id}">
+      <i class="opt-dot"></i><span><b>${o.name}</b><small>${o.sub}</small></span>${cur === o.id ? ic('check') : ''}</button>`;
     openSheet(`
       <button class="sheet-x" data-act="close-sheet" aria-label="Cerrar">${ic('close')}</button>
       <div class="sheet-body">
         <p class="eyebrow">${cap(longDate(parse(ds)))}</p>
-        <h2 class="h-display sheet-title">¿Qué toca hoy?</h2>
-        <div class="opts">${opts.map((o) => `<button class="opt cat-${o.cat} ${cur === o.id ? 'is-on' : ''}" data-act="set-over" data-id="${o.id}">
-          <i class="opt-dot"></i><span><b>${o.name}</b><small>${o.sub}</small></span>${cur === o.id ? ic('check') : ''}</button>`).join('')}</div>
+        <h2 class="h-display sheet-title">¿Qué toca este día?</h2>
+        ${groups.map((g) => `<h3 class="opt-h">${g.t}</h3><div class="opts">${g.list.map(opt).join('')}</div>`).join('')}
         ${S.over[ds] !== undefined ? `<button class="btn-ghost block" data-act="clear-over">Volver al plan semanal</button>` : ''}
       </div>`);
   }
@@ -1391,6 +1425,7 @@
     goal(b) { ui.goal = b.dataset.g; render(); },
     lib(b) { ui.lib = b.dataset.v; render(); },
     exg(b) { ui.exg = b.dataset.g; render(); },
+    'week-set'(b) { S.week = Number(b.dataset.w); save(); render(); toTop(); },
     'week-go'(b) { S.week = Math.max(1, Math.min(PROGRAM.length, S.week + Number(b.dataset.d))); save(); render(); toTop(); },
     'set-over'(b) { S.over[ui.day] = b.dataset.id; save(); closeSheet(); render(); },
     'clear-over'() { delete S.over[ui.day]; save(); closeSheet(); render(); },
