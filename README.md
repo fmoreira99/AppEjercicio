@@ -9,7 +9,7 @@ Es una app web instalable (PWA): no hay base de datos ni servidor. Todo se guard
 **1. Publicarla con GitHub Pages**
 
 1. En el repo: *Settings → Pages → Build and deployment*.
-2. *Source*: **Deploy from a branch**. *Branch*: `claude/eager-curie-5yq85p` (la rama por defecto) y carpeta `/ (root)`. *Save*.
+2. *Source*: **GitHub Actions**. No hay que configurar nada más: el archivo `.github/workflows/pages.yml` publica la app cada vez que se sube un cambio (pestaña *Actions* para ver el avance).
 3. En ~1 minuto queda en `https://fmoreira99.github.io/AppEjercicio/` (la dirección exacta aparece arriba en esa pantalla).
 
 GitHub Pages gratis solo sirve repos **públicos** (en uno privado hace falta un plan de pago). Si el repo es privado: o lo haces público (*Settings → General → Danger Zone → Change visibility*; no tiene datos personales, tus datos quedan en el teléfono) o usas Cloudflare Pages o Netlify, que también son gratis y aceptan repos privados (conectas el repo, sin comando de build, carpeta de salida `/`).

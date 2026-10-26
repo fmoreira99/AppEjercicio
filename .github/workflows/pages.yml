@@ -1,0 +1,36 @@
+# Publica la app en GitHub Pages cada vez que se sube un cambio a la rama principal.
+# Requiere: Settings → Pages → Source: GitHub Actions.
+name: Publicar en GitHub Pages
+
+on:
+  push:
+    branches: [claude/eager-curie-5yq85p, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Copiar solo los archivos de la app
+        run: |
+          mkdir _site
+          cp -r index.html manifest.webmanifest sw.js css js icons img _site/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4
